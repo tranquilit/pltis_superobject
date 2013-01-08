@@ -2,7 +2,7 @@
 <CONFIG>
   <Package Version="4">
     <PathDelim Value="\"/>
-    <Name Value="pl_superobject"/>
+    <Name Value="pltis_superobject"/>
     <Author Value="Henri Gourvest"/>
     <CompilerOptions>
       <Version Value="11"/>
@@ -22,16 +22,6 @@
 
 packaging : TIS"/>
     <Version Minor="1"/>
-    <Files Count="2">
-      <Item1>
-        <Filename Value="source\superobject.pas"/>
-        <UnitName Value="superobject"/>
-      </Item1>
-      <Item2>
-        <Filename Value="source\superxmlparser.pas"/>
-        <UnitName Value="superxmlparser"/>
-      </Item2>
-    </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="1">
       <Item1>

@@ -2,12 +2,12 @@
   This source is only used to compile and install the package.
  }
 
-unit pl_superobject;
+unit pltis_superobject;
 
 interface
 
 uses
-  superobject, superxmlparser, LazarusPackageIntf;
+  LazarusPackageIntf;
 
 implementation
 
@@ -16,5 +16,5 @@ begin
 end;
 
 initialization
-  RegisterPackage('pl_superobject', @Register);
+  RegisterPackage('pltis_superobject', @Register);
 end.
