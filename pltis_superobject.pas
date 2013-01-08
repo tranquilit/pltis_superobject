@@ -7,7 +7,7 @@ unit pltis_superobject;
 interface
 
 uses
-  LazarusPackageIntf;
+  superobject, superxmlparser, soutils, LazarusPackageIntf;
 
 implementation
 

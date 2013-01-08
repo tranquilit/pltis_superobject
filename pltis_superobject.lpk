@@ -22,11 +22,28 @@
 
 packaging : TIS"/>
     <Version Minor="1"/>
-    <Type Value="RunAndDesignTime"/>
-    <RequiredPkgs Count="1">
+    <Files Count="3">
       <Item1>
-        <PackageName Value="FCL"/>
+        <Filename Value="source\superobject.pas"/>
+        <UnitName Value="superobject"/>
       </Item1>
+      <Item2>
+        <Filename Value="source\superxmlparser.pas"/>
+        <UnitName Value="superxmlparser"/>
+      </Item2>
+      <Item3>
+        <Filename Value="soutils.pas"/>
+        <UnitName Value="soutils"/>
+      </Item3>
+    </Files>
+    <Type Value="RunAndDesignTime"/>
+    <RequiredPkgs Count="2">
+      <Item1>
+        <PackageName Value="pltis_jcl"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="FCL"/>
+      </Item2>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
