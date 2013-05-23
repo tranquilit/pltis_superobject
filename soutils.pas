@@ -8,7 +8,9 @@ uses
   Classes, SysUtils,SuperObject,DB;
 
 function StringList2SuperObject(St:TStringList):ISuperObject;
-function SplitLines(St:String):ISuperObject;
+function SplitLines(const St:String):ISuperObject;
+function Split(const St: String; Sep: Char): ISuperObject;
+function StrIn(const St: String; List:ISuperObject): Boolean;
 
 function CharIsWhiteSpace(const C: Char): Boolean;
 function CharIsWildcard(const C: Char): Boolean;
@@ -356,16 +358,47 @@ begin
     Result.AsArray.Add(st[i]);
 end;
 
-function SplitLines(St: String): ISuperObject;
+
+function SplitLines(const St: String): ISuperObject;
 var
   tok : String;
+  St2:String;
 begin
   Result := TSuperObject.Create(stArray);
-  St := StrUtils.StringsReplace(St,[#13#10,#13,#10],[#13,#13,#13],[rfReplaceAll]);
-  repeat
-    tok := StrToken(St,#13);
+  St2 := StrUtils.StringsReplace(St,[#13#10,#13,#10],[#13,#13,#13],[rfReplaceAll]);
+  while St2<>'' do
+  begin
+    tok := StrToken(St2,#13);
     Result.AsArray.Add(tok);
-  until St='';
+  end;
+end;
+
+function Split(const St: String; Sep: Char): ISuperObject;
+var
+  tok : String;
+  St2:String;
+begin
+  Result := TSuperObject.Create(stArray);
+  St2 := St;
+  while St2<>'' do
+  begin
+    tok := StrToken(St2,Sep);
+    Result.AsArray.Add(tok);
+  end;
+end;
+
+// return True if St is in the List list of string
+function StrIn(const St: String; List: ISuperObject): Boolean;
+var
+  it:ISuperObject;
+begin
+  for it in List do
+    if (it.DataType=stString) and (it.AsString=St) then
+    begin
+      result := True;
+      Exit;
+    end;
+  result := False;
 end;
 
 function Dataset2SO(DS: TDataset;AllRecords:Boolean=True): ISuperObject;
@@ -378,6 +411,9 @@ var
   begin
     for i:=0 to DS.Fields.Count-1 do
     begin
+      if DS.Fields[i].IsNull then
+        rec.N[DS.Fields[i].fieldname] := Nil
+      else
       case DS.Fields[i].DataType of
         ftString : rec.S[DS.Fields[i].fieldname] := UTF8Decode(DS.Fields[i].AsString);
         ftInteger : rec.I[DS.Fields[i].fieldname] := DS.Fields[i].AsInteger;
@@ -423,6 +459,10 @@ var
       if StrIsOneOf(DS.Fields[i].fieldname,ExcludedFields) then
         Continue;
       if rec.AsObject.Exists(DS.Fields[i].fieldname) then
+      begin
+        if ObjectIsNull(rec.N[DS.Fields[i].fieldname]) then
+          DS.Fields[i].Clear
+        else
         case DS.Fields[i].DataType of
           ftString : DS.Fields[i].AsString := UTF8Encode(rec.S[DS.Fields[i].fieldname]);
           ftInteger : DS.Fields[i].AsInteger := rec.I[DS.Fields[i].fieldname];
@@ -433,7 +473,8 @@ var
             DS.Fields[i].AsDateTime := dt;
         else
           DS.Fields[i].AsString := UTF8Encode(rec.S[DS.Fields[i].fieldname]);
-        end;
+        end
+      end
     end;
   end;
 
@@ -461,4 +502,4 @@ end;
 
 
 end.
-
+
