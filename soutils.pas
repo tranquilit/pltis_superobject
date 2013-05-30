@@ -10,8 +10,10 @@ uses
 function StringList2SuperObject(St:TStringList):ISuperObject;
 function SplitLines(const St:String):ISuperObject;
 function Split(const St: String; Sep: Char): ISuperObject;
+function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
 function StrIsOneOf(const S: string; const List: array of string): Boolean;
+function DynArr2SuperObject(const items: Array of String):ISuperObject;
 
 function StrToken(var S: string; Separator: Char): string;
 
@@ -52,6 +54,16 @@ begin
     end;
 end;
 
+function DynArr2SuperObject(const items: Array of String):ISuperObject;
+var
+  i:integer;
+begin
+  Result := TSuperObject.Create(stArray);
+  for i:=low(items) to High(items) do
+    Result.AsArray.Add(items[i]);
+
+end;
+
 
 function StringList2SuperObject(St: TStringList): ISuperObject;
 var
@@ -88,6 +100,19 @@ begin
   begin
     tok := StrToken(St2,Sep);
     Result.AsArray.Add(tok);
+  end;
+end;
+
+function Join(const Sep: String; Arr: ISuperObject): String;
+var
+  item:ISuperObject;
+begin
+  result := '';
+  for item in Arr do
+  begin
+    if Result<>'' then
+      Result:=Result+Sep;
+    Result:=Result+item.AsString;
   end;
 end;
 
@@ -133,6 +158,7 @@ var
 begin
   if AllRecords then
   begin
+    if not DS.Active then DS.Open;
     DS.First;
     Result := TSuperObject.Create(stArray);
     While not DS.EOF do
@@ -145,6 +171,7 @@ begin
   end
   else
   begin
+    if not DS.Active then DS.Open;
     Result := TSuperObject.Create;
     Fillrec(Result);
   end;
