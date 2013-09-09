@@ -122,7 +122,7 @@ function StrIn(const St: String; List: ISuperObject): Boolean;
 var
   it:ISuperObject;
 begin
-  if List <>Nil
+  if List <>Nil then
     for it in List do
       if (it.DataType=stString) and (it.AsString=St) then
       begin
