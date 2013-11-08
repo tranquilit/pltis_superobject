@@ -108,12 +108,13 @@ var
   item:ISuperObject;
 begin
   result := '';
-  for item in Arr do
-  begin
-    if Result<>'' then
-      Result:=Result+Sep;
-    Result:=Result+item.AsString;
-  end;
+  if Arr<>Nil then
+    for item in Arr do
+    begin
+      if Result<>'' then
+        Result:=Result+Sep;
+      Result:=Result+item.AsString;
+    end;
 end;
 
 // return True if St is in the List list of string
@@ -121,12 +122,13 @@ function StrIn(const St: String; List: ISuperObject): Boolean;
 var
   it:ISuperObject;
 begin
-  for it in List do
-    if (it.DataType=stString) and (it.AsString=St) then
-    begin
-      result := True;
-      Exit;
-    end;
+  if List <>Nil then
+    for it in List do
+      if (it.DataType=stString) and (it.AsString=St) then
+      begin
+        result := True;
+        Exit;
+      end;
   result := False;
 end;
 
