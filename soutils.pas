@@ -20,6 +20,8 @@ function StrToken(var S: string; Separator: Char): string;
 function Dataset2SO(DS:TDataset;AllRecords:Boolean=True):ISuperObject;
 procedure SO2Dataset(SO:ISuperObject;DS:TDataset;ExcludedFields:Array of String);
 
+function csv2SO(csv:UTF8String;Sep:Char=#0):ISUperObject;
+
 function ClipboardSOData: ISuperObject;
 
 var
@@ -233,6 +235,51 @@ begin
       DS.Append;
     Fillrec(SO);
     DS.Post;
+  end;
+end;
+
+function csv2SO(csv: UTF8String;Sep:Char=#0): ISUperObject;
+var
+  r,col,maxcol:integer;
+  row : String;
+  Lines,header,values,newrec:ISuperObject;
+begin
+  lines := SplitLines(csv);
+  row := lines.AsArray.S[0];
+  if Sep=#0 then
+  begin
+    if pos(#9,row)>0 then
+      Sep := #9
+    else
+    if pos(';',row)>0 then
+      Sep := ';'
+    else
+    if pos(',',row)>0 then
+      Sep := ',';
+  end;
+
+  header := Split(row,Sep);
+  result := TSuperObject.Create(stArray);
+  if Lines.AsArray.Length>1 then
+    for r:=1 to lines.AsArray.Length-1 do
+    begin
+      row := lines.AsArray.S[r];
+      values :=Split(row,sep);
+      Newrec := TSuperObject.Create;
+      result.AsArray.Add(newrec);
+      maxcol := values.AsArray.Length;
+      if maxcol > header.AsArray.Length then
+        maxcol := header.AsArray.Length;
+
+      for col := 0 to maxcol-1 do
+        newrec.S[header.AsArray.S[col]] := UTF8Decode(values.AsArray.S[col]);
+    end
+  else
+  begin
+    Newrec := TSuperObject.Create;
+    result.AsArray.Add(newrec);
+    for col := 0 to header.AsArray.Length-1 do
+      newrec.S[header.AsArray.S[col]] := '';
   end;
 end;
 
