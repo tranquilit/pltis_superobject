@@ -20,9 +20,8 @@ function StrToken(var S: string; Separator: Char): string;
 function Dataset2SO(DS:TDataset;AllRecords:Boolean=True):ISuperObject;
 procedure SO2Dataset(SO:ISuperObject;DS:TDataset;ExcludedFields:Array of String);
 
-
 implementation
-uses StrUtils,character;
+uses StrUtils,character,superdate;
 
 function StrToken(var S: string; Separator: Char): string;
 var
