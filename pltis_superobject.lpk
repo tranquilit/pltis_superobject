@@ -22,7 +22,7 @@
 
 packaging : TIS"/>
     <Version Minor="2"/>
-    <Files Count="3">
+    <Files Count="4">
       <Item1>
         <Filename Value="source\superobject.pas"/>
         <UnitName Value="superobject"/>
@@ -35,6 +35,10 @@ packaging : TIS"/>
         <Filename Value="soutils.pas"/>
         <UnitName Value="soutils"/>
       </Item3>
+      <Item4>
+        <Filename Value="soclipbrd.pas"/>
+        <UnitName Value="soclipbrd"/>
+      </Item4>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="2">
