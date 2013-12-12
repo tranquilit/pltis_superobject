@@ -2191,15 +2191,16 @@ begin
   st := '';
   tok := TSuperTokenizer.Create;
 
-  if (stream.Read(bom, sizeof(bom)) = 2) and (bom[0] = $FF) and (bom[1] = $FE) then
+  size := stream.Read(bom, sizeof(bom));
+  if (size = 2) and (bom[0] = $FF) and (bom[1] = $FE) then
   begin
     unicode := true;
     size := stream.Read(bufferw, BUFFER_SIZE * SizeOf(SoChar)) div SizeOf(SoChar);
   end else
     begin
       unicode := false;
-      stream.Seek(0, soFromBeginning);
-      size := stream.Read(buffera, BUFFER_SIZE);
+      buffera[0] := AnsiChar(bom[0]);
+      buffera[1] := AnsiChar(bom[1]);
     end;
 
   while size > 0 do
@@ -3381,6 +3382,7 @@ var
   j: integer;
 begin
   case FDataType of
+    stNull: Result := TSuperObject.Create(stNull);
     stBoolean: Result := TSuperObject.Create(FO.c_boolean);
     stDouble: Result := TSuperObject.Create(FO.c_double);
     stCurrency: Result := TSuperObject.CreateCurrency(FO.c_currency);
@@ -3395,7 +3397,10 @@ begin
         if ObjectFindFirst(self, ite) then
         with Result.AsObject do
         repeat
-          PutO(ite.key, ite.val.Clone);
+          if ite.val<>Nil then
+            PutO(ite.key, ite.val.Clone)
+          else
+            PutO(ite.key, Nil);
         until not ObjectFindNext(ite);
         ObjectFindClose(ite);
       end;
