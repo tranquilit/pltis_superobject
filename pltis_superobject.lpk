@@ -41,16 +41,10 @@ packaging : TIS"/>
       </Item4>
     </Files>
     <Type Value="RunAndDesignTime"/>
-    <RequiredPkgs Count="3">
+    <RequiredPkgs Count="1">
       <Item1>
-        <PackageName Value="pltis_utils"/>
-      </Item1>
-      <Item2>
         <PackageName Value="lclbase"/>
-      </Item2>
-      <Item3>
-        <PackageName Value="FCL"/>
-      </Item3>
+      </Item1>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
