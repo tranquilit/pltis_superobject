@@ -22,6 +22,12 @@ procedure SO2Dataset(SO:ISuperObject;DS:TDataset;ExcludedFields:Array of String)
 
 function csv2SO(csv:UTF8String;Sep:Char=#0):ISUperObject;
 
+type TSOCompare=function (SOArray:ISuperObject;idx1,idx2:integer):integer;
+function DefaultSOCompareFunc(SOArray:ISuperObject;idx1,idx2:integer):integer;
+procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
+
+procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
+
 implementation
 uses StrUtils,character,superdate;
 
@@ -276,6 +282,123 @@ begin
     for col := 0 to header.AsArray.Length-1 do
       newrec.S[header.AsArray.S[col]] := '';
   end;
+end;
+
+function DefaultSOCompareFunc(SOArray:ISuperObject;idx1,idx2:integer):integer;
+var
+  compresult : TSuperCompareResult;
+  SO1,SO2:ISuperObject;
+
+begin
+  SO1 := SOArray.AsArray[idx1];
+  SO2 := SOArray.AsArray[idx2];
+  compresult := SO1.Compare(SO2);
+  case compresult of
+    cpLess : Result := -1;
+    cpEqu  : Result := 0;
+    cpGreat : Result := 1;
+    cpError :  Result := CompareStr(SO1.AsString,SO2.AsString);
+  end;
+end;
+
+procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
+  procedure QuickSort(L, R: integer;CompareFunc: TSOCompare);
+  var
+    I, J, P: Integer;
+    item1,item2:ISuperObject;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while CompareFunc(SOArray, I, P) < 0 do Inc(I);
+        while CompareFunc(SOArray,J, P) > 0 do Dec(J);
+        if I <= J then
+        begin
+          //exchange items
+          item1 := SOArray.AsArray[I];
+          item2 := SOArray.AsArray[J];
+          SOArray.AsArray[I] := item2;
+          SOArray.AsArray[J] := item1;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J, CompareFunc);
+      L := I;
+    until I >= R;
+  end;
+
+begin
+  If CompareFunc=Nil then
+     CompareFunc :=  @DefaultSOCompareFunc;
+  QuickSort(0,SOArray.AsArray.Length-1,CompareFunc);
+end;
+
+procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
+  function SOCompareFields(SOArray:ISuperObject;idx1,idx2:integer):integer;
+  var
+    compresult : TSuperCompareResult;
+    SO1,SO2,F1,F2:ISuperObject;
+    i:integer;
+  begin
+    SO1 := SOArray.AsArray[idx1];
+    SO2 := SOArray.AsArray[idx2];
+    for i:=low(Fields) to high(fields) do
+    begin
+      F1 := SO1[Fields[i]];
+      F2 := SO2[Fields[i]];
+      compresult := SO1.Compare(SO2);
+      case compresult of
+        cpLess : Result := -1;
+        cpEqu  : Result := 0;
+        cpGreat : Result := 1;
+        cpError :  Result := CompareStr(F1.AsString,F2.AsString);
+      end;
+      if Result<>0 then
+        Break;
+    end;
+  end;
+
+  procedure QuickSort(L, R: integer);
+  var
+    I, J, P: Integer;
+    item1,item2:ISuperObject;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while SOCompareFields(SOArray, I, P) < 0 do Inc(I);
+        while SOCompareFields(SOArray,J, P) > 0 do Dec(J);
+        if I <= J then
+        begin
+          //exchange items
+          item1 := SOArray.AsArray[I];
+          item2 := SOArray.AsArray[J];
+          SOArray.AsArray[I] := item2;
+          SOArray.AsArray[J] := item1;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+
+begin
+  QuickSort(0,SOArray.AsArray.Length-1);
 end;
 
 end.
