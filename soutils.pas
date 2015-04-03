@@ -398,7 +398,8 @@ procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
   end;
 
 begin
-  QuickSort(0,SOArray.AsArray.Length-1);
+  if SOArray.AsArray<>Nil then
+    QuickSort(0,SOArray.AsArray.Length-1);
 end;
 
 end.
