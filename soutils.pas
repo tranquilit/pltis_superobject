@@ -9,13 +9,13 @@ uses
 
 function StringList2SuperObject(St:TStringList):ISuperObject;
 function SplitLines(const St:String):ISuperObject;
-function Split(const St: String; Sep: Char): ISuperObject;
+function Split(const St: String; Sep: String): ISuperObject;
 function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
 function StrIsOneOf(const S: string; const List: array of string): Boolean;
 function DynArr2SuperObject(const items: Array of String):ISuperObject;
 
-function StrToken(var S: string; Separator: Char): string;
+function StrToken(var S: string; Separator: String): string;
 
 function Dataset2SO(DS:TDataset;AllRecords:Boolean=True):ISuperObject;
 procedure SO2Dataset(SO:ISuperObject;DS:TDataset;ExcludedFields:Array of String);
@@ -31,7 +31,7 @@ procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
 implementation
 uses StrUtils,character,superdate;
 
-function StrToken(var S: string; Separator: Char): string;
+function StrToken(var S: string; Separator: String): string;
 var
   I: SizeInt;
 begin
@@ -39,7 +39,7 @@ begin
   if I <> 0 then
   begin
     Result := Copy(S, 1, I - 1);
-    Delete(S, 1, I);
+    Delete(S, 1, I+Length(Separator)-1);
   end
   else
   begin
@@ -96,7 +96,7 @@ begin
   end;
 end;
 
-function Split(const St: String; Sep: Char): ISuperObject;
+function Split(const St: String; Sep: String): ISuperObject;
 var
   tok : String;
   St2:String;
