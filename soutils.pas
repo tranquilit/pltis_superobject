@@ -335,9 +335,12 @@ procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
   end;
 
 begin
-  If CompareFunc=Nil then
-     CompareFunc :=  @DefaultSOCompareFunc;
-  QuickSort(0,SOArray.AsArray.Length-1,CompareFunc);
+  if (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
+  begin
+    If CompareFunc=Nil then
+       CompareFunc :=  @DefaultSOCompareFunc;
+    QuickSort(0,SOArray.AsArray.Length-1,CompareFunc);
+  end;
 end;
 
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
