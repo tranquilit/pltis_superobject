@@ -242,7 +242,8 @@ procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
 begin
   If CompareFunc=Nil then
      CompareFunc :=  @DefaultSOCompareFunc;
-  QuickSort(0,SOArray.AsArray.Length-1,CompareFunc);
+  if (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
+    QuickSort(0,SOArray.AsArray.Length-1,CompareFunc);
 end;
 
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
@@ -303,7 +304,7 @@ procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
   end;
 
 begin
-  if SOArray.AsArray<>Nil then
+  if (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
     QuickSort(0,SOArray.AsArray.Length-1);
 end;
 
