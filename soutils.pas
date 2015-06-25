@@ -45,6 +45,8 @@ procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
 
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
 
+function SOArrayFindFirst(AnObject, List: ISuperObject; keys: array of String): ISuperobject;
+
 implementation
 
 uses StrUtils,character,superdate;
@@ -121,26 +123,34 @@ var
 begin
   result := '';
   if Arr<>Nil then
-    for item in Arr do
-    begin
-      if Result<>'' then
-        Result:=Result+Sep;
-      Result:=Result+item.AsString;
-    end;
+  begin
+    if Arr.DataType=stArray then
+      for item in Arr do
+      begin
+        if Result<>'' then
+          Result:=Result+Sep;
+        Result:=Result+item.AsString;
+      end
+    else
+      Result := Arr.AsString;
+  end;
 end;
 
 // return True if St is in the List list of string
 function StrIn(const St: String; List: ISuperObject): Boolean;
 var
   it:ISuperObject;
+  st1,st2:String;
 begin
   if List <>Nil then
     for it in List do
+    begin
       if (it.DataType=stString) and (it.AsString=St) then
       begin
         result := True;
         Exit;
       end;
+    end;
   result := False;
 end;
 
@@ -306,6 +316,38 @@ procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
 begin
   if (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
     QuickSort(0,SOArray.AsArray.Length-1);
+end;
+
+function SOArrayFindFirst(AnObject, List: ISuperObject; keys: array of String
+  ): ISuperobject;
+var
+  item: ISuperObject;
+  key:String;
+begin
+  for item in List do
+  begin
+    if length(keys) =0 then
+    begin
+      if item.Compare(AnObject) = cpEqu then
+      begin
+        Result := item;
+        exit;
+      end;
+    end
+    else
+    begin
+      for key in keys do
+      begin
+        if item[key].Compare(AnObject[key]) <> cpEqu then
+          break;
+      end;
+      if item[key].Compare(AnObject[key]) = cpEqu then
+      begin
+        Result := item;
+        exit;
+      end;
+    end;
+  end;
 end;
 
 end.
