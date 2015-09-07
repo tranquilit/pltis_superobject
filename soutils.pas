@@ -324,6 +324,7 @@ var
   item: ISuperObject;
   key:String;
 begin
+  Result := Nil;
   for item in List do
   begin
     if length(keys) =0 then
