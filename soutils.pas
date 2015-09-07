@@ -36,6 +36,7 @@ function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
 function DynArr2SuperObject(const items: Array of String):ISuperObject;
 function StrToken(var S: string; Separator: String): string;
+function ExtractField(SOList:ISuperObject;fieldname:String):ISuperObject;
 
 function csv2SO(csv:UTF8String;Sep:Char=#0):ISuperObject;
 
@@ -115,6 +116,15 @@ begin
     tok := StrToken(St2,Sep);
     Result.AsArray.Add(tok);
   end;
+end;
+
+function ExtractField(SOList:ISuperObject;fieldname:String):ISuperObject;
+var
+  item:ISuperObject;
+begin
+  Result := TSuperObject.Create(stArray);
+  for item in SOList do
+     Result.AsArray.Add(item[fieldname]);
 end;
 
 function Join(const Sep: String; Arr: ISuperObject): String;
