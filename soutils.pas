@@ -122,10 +122,14 @@ function ExtractField(SOList:ISuperObject;fieldname:String):ISuperObject;
 var
   item:ISuperObject;
 begin
-  Result := TSuperObject.Create(stArray);
   if (SOList<>Nil) and (SOList.AsArray<>Nil) then
+  begin
+    Result := TSuperObject.Create(stArray);
     for item in SOList do
        Result.AsArray.Add(item[fieldname]);
+  end
+  else
+    Result := Nil;
 end;
 
 function Join(const Sep: String; Arr: ISuperObject): String;
