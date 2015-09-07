@@ -123,8 +123,9 @@ var
   item:ISuperObject;
 begin
   Result := TSuperObject.Create(stArray);
-  for item in SOList do
-     Result.AsArray.Add(item[fieldname]);
+  if (SOList<>Nil) and (SOList.AsArray<>Nil) then
+    for item in SOList do
+       Result.AsArray.Add(item[fieldname]);
 end;
 
 function Join(const Sep: String; Arr: ISuperObject): String;
