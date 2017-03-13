@@ -22,7 +22,7 @@
 
 packaging : TIS"/>
     <Version Minor="4"/>
-    <Files Count="5">
+    <Files Count="7">
       <Item1>
         <Filename Value="source\superobject.pas"/>
         <UnitName Value="superobject"/>
@@ -43,6 +43,14 @@ packaging : TIS"/>
         <Filename Value="sodbutils.pas"/>
         <UnitName Value="sodbutils"/>
       </Item5>
+      <Item6>
+        <Filename Value="source\superdate.pas"/>
+        <UnitName Value="superdate"/>
+      </Item6>
+      <Item7>
+        <Filename Value="source\supertypes.pas"/>
+        <UnitName Value="supertypes"/>
+      </Item7>
     </Files>
     <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="1">
