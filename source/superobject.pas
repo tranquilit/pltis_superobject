@@ -4444,7 +4444,7 @@ begin
   if (index < FLength) then
   begin
     if FLength = FSize then
-      Expand(FLength);
+      Expand(FLength+1);
     if Index < FLength then
       Move(FArray^[index], FArray^[index + 1],
         (FLength - index) * SizeOf(Pointer));
