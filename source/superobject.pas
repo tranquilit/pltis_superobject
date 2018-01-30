@@ -1181,8 +1181,7 @@ end;
 
 procedure ObjectFindClose(var F: TSuperObjectIter);
 begin
-  if Assigned(F.Ite) then
-    FreeAndNil(F.Ite);
+  FreeAndNil(F.Ite);
   F.val := nil;
 end;
 
@@ -2246,7 +2245,7 @@ class function TSuperObject.ParseFile(const FileName: string; strict: Boolean;
 var
   stream: TFileStream;
 begin
-  stream := TFileStream.Create(FileName, fmOpenRead, fmShareDenyWrite);
+  stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
     Result := ParseStream(stream, strict, partial, this, options, put, dt);
   finally
@@ -3410,10 +3409,13 @@ begin
       begin
         Result := TSuperObject.Create(stObject);
         if ObjectFindFirst(self, ite) then
-        with Result.AsObject do
-        repeat
-          PutO(ite.key, ite.val.Clone);
-        until not ObjectFindNext(ite);
+          with Result.AsObject do
+            repeat
+              if ite.val = nil then
+                PutO(ite.key, nil)
+              else
+                PutO(ite.key, ite.val.Clone);
+            until not ObjectFindNext(ite);
         ObjectFindClose(ite);
       end;
     stArray:
@@ -3421,8 +3423,8 @@ begin
         Result := TSuperObject.Create(stArray);
         arr := AsArray;
         with Result.AsArray do
-        for j := 0 to arr.Length - 1 do
-          Add(arr.GetO(j).Clone);
+          for j := 0 to arr.Length - 1 do
+            Add(arr.GetO(j).Clone);
       end;
     stNull:
       Result := TSuperObject.Create(stNull);
@@ -3430,7 +3432,6 @@ begin
     Result := nil;
   end;
 end;
-
 procedure TSuperObject.Merge(const obj: ISuperObject; reference: boolean);
 var
   prop1, prop2: ISuperObject;
