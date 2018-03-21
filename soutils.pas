@@ -126,7 +126,12 @@ begin
   begin
     Result := TSuperObject.Create(stArray);
     for item in SOList do
-       Result.AsArray.Add(item[fieldname]);
+    begin
+      if Item.DataType = stObject then
+        Result.AsArray.Add(item[fieldname])
+      else if Item.DataType = stArray then
+        Result.AsArray.Add(item.AsArray[StrToInt(fieldname)]);
+    end;
   end
   else
     Result := Nil;

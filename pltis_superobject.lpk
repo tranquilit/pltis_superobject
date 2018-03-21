@@ -21,7 +21,7 @@
     <Description Value="superobject JSON parser / writer
 
 packaging : TIS"/>
-    <Version Minor="4"/>
+    <Version Minor="5"/>
     <Files Count="7">
       <Item1>
         <Filename Value="source\superobject.pas"/>
