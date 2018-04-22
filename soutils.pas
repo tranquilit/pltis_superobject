@@ -149,10 +149,10 @@ begin
       begin
         if Result<>'' then
           Result:=Result+Sep;
-        Result:=Result+item.AsString;
+        Result:=Result+UTF8Encode(item.AsString);
       end
     else
-      Result := Arr.AsString;
+      Result := UTF8Encode(Arr.AsString);
   end;
 end;
 
@@ -347,7 +347,7 @@ begin
   Result := Nil;
   for item in List do
   begin
-    if length(keys) =0 then
+    if length(keys) = 0 then
     begin
       if item.Compare(AnObject) = cpEqu then
       begin
@@ -359,10 +359,10 @@ begin
     begin
       for key in keys do
       begin
-        if item[key].Compare(AnObject[key]) <> cpEqu then
+        if (item[key]<>Nil) and (item[key].Compare(AnObject[key]) <> cpEqu) then
           break;
       end;
-      if item[key].Compare(AnObject[key]) = cpEqu then
+      if (item[key]<>Nil) and (item[key].Compare(AnObject[key]) = cpEqu) then
       begin
         Result := item;
         exit;
