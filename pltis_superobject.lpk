@@ -3,6 +3,7 @@
   <Package Version="4">
     <PathDelim Value="\"/>
     <Name Value="pltis_superobject"/>
+    <Type Value="RunAndDesignTime"/>
     <Author Value="Henri Gourvest"/>
     <CompilerOptions>
       <Version Value="11"/>
@@ -11,18 +12,12 @@
         <OtherUnitFiles Value="source"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
-      <Other>
-        <CompilerMessages>
-          <MsgFileName Value=""/>
-        </CompilerMessages>
-        <CompilerPath Value="$(CompPath)"/>
-      </Other>
     </CompilerOptions>
     <Description Value="superobject JSON parser / writer
 
 packaging : TIS"/>
     <Version Minor="5"/>
-    <Files Count="7">
+    <Files Count="6">
       <Item1>
         <Filename Value="source\superobject.pas"/>
         <UnitName Value="superobject"/>
@@ -44,15 +39,10 @@ packaging : TIS"/>
         <UnitName Value="sodbutils"/>
       </Item5>
       <Item6>
-        <Filename Value="source\superdate.pas"/>
-        <UnitName Value="superdate"/>
-      </Item6>
-      <Item7>
         <Filename Value="source\supertypes.pas"/>
         <UnitName Value="supertypes"/>
-      </Item7>
+      </Item6>
     </Files>
-    <Type Value="RunAndDesignTime"/>
     <RequiredPkgs Count="1">
       <Item1>
         <PackageName Value="lclbase"/>

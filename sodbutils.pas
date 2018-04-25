@@ -45,7 +45,7 @@ var
         ftInteger : rec.I[DS.Fields[i].fieldname] := DS.Fields[i].AsInteger;
         ftFloat : rec.D[DS.Fields[i].fieldname] := DS.Fields[i].AsFloat;
         ftBoolean : rec.B[DS.Fields[i].fieldname] := DS.Fields[i].AsBoolean;
-        ftDateTime : rec.S[DS.Fields[i].fieldname] :=  DelphiDateTimeToISO8601Date(DS.Fields[i].AsDateTime);
+        ftDateTime : rec.D[DS.Fields[i].fieldname] :=  DS.Fields[i].AsDateTime;
       else
         rec.S[DS.Fields[i].fieldname] := UTF8Decode(DS.Fields[i].AsString);
       end;
@@ -97,8 +97,7 @@ var
           ftFloat : DS.Fields[i].AsFloat := rec.D[DS.Fields[i].fieldname];
           ftBoolean : DS.Fields[i].AsBoolean := rec.B[DS.Fields[i].fieldname];
 
-          ftDateTime : if ISO8601DateToDelphiDateTime(rec.S[DS.Fields[i].fieldname],dt) then
-            DS.Fields[i].AsDateTime := dt;
+          ftDateTime : DS.Fields[i].AsDateTime := rec.D[DS.Fields[i].fieldname];
         else
           DS.Fields[i].AsString := UTF8Encode(rec.S[DS.Fields[i].fieldname]);
         end

@@ -636,8 +636,13 @@ type
 {$ELSE}
     function QueryInterface(const IID: TGUID; out Obj): HResult; virtual; stdcall;
 {$ENDIF}
+    {$IFDEF unix}
+    function _AddRef: Integer; virtual; cdecl;
+    function _Release: Integer; virtual; cdecl;
+    {$ELSE}
     function _AddRef: Integer; virtual; stdcall;
     function _Release: Integer; virtual; stdcall;
+    {$ENDIF}
 
     function GetO(const path: SOString): ISuperObject;
     procedure PutO(const path: SOString; const Value: ISuperObject);
@@ -837,12 +842,16 @@ function SOInvoke(const obj: TValue; const method: string; const params: string;
 
 implementation
 uses
-  sysutils, Windows, superdate
-{$IFDEF FPC}
-  ,sockets
-{$ELSE}
-  ,WinSock
+{$IFDEF Windows}
+  Windows,
+  superdate,
 {$ENDIF}
+{$IFDEF FPC}
+  sockets,
+{$ELSE}
+  WinSock,
+{$ENDIF}
+   sysutils
   ;
 
 {$IFDEF DEBUG}
@@ -992,19 +1001,10 @@ var
   i: Int64;
 begin
   case ObjectGetType(obj) of
-  stInt:
+  stInt,stDouble:
     begin
-      dt := JavaToDelphiDateTime(obj.AsInteger);
+      dt := obj.AsDouble;
       Result := True;
-    end;
-  stString:
-    begin
-      if ISO8601DateToJavaDateTime(obj.AsString, i) then
-      begin
-        dt := JavaToDelphiDateTime(i);
-        Result := True;
-      end else
-        Result := TryStrToDateTime(obj.AsString, dt);
     end;
   else
     Result := False;
@@ -1091,7 +1091,7 @@ begin
     varSingle:   Result := TSuperObject.Create(VSingle);
     varDouble:   Result := TSuperObject.Create(VDouble);
     varCurrency: Result := TSuperObject.CreateCurrency(VCurrency);
-    varDate:     Result := TSuperObject.Create(DelphiToJavaDateTime(vDate));
+    varDate:     Result := TSuperObject.Create(vDate);
     varOleStr:   Result := TSuperObject.Create(SOString(VOleStr));
     varBoolean:  Result := TSuperObject.Create(VBoolean);
     varShortInt: Result := TSuperObject.Create(VShortInt);
@@ -4236,6 +4236,18 @@ begin
   end;
 end;
 
+{$IFDEF unix}
+function TSuperObject._AddRef: Integer; cdecl;
+begin
+  Result := InterlockedIncrement(FRefCount);
+end;
+function TSuperObject._Release: Integer; cdecl;
+begin
+  Result := InterlockedDecrement(FRefCount);
+  if Result = 0 then
+    Destroy;
+end;
+{$ELSE}
 function TSuperObject._AddRef: Integer; stdcall;
 begin
   Result := InterlockedIncrement(FRefCount);
@@ -4247,7 +4259,7 @@ begin
   if Result = 0 then
     Destroy;
 end;
-
+{$ENDIF}
 function TSuperObject.Compare(const str: SOString): TSuperCompareResult;
 begin
   Result := Compare(TSuperObject.ParseString(PSOChar(str), False));

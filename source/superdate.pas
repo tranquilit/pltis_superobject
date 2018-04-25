@@ -4,6 +4,13 @@ unit superdate;
   {$MODE OBJFPC}{$H+}
 {$ENDIF}
 
+{$IFDEF unix}
+interface
+implementation
+end.
+{$ENDIF}
+
+{$IFDEF windows}
 interface
 uses
   supertypes;
@@ -1018,3 +1025,4 @@ begin
 end;
 
 end.
+{$ENDIF}
