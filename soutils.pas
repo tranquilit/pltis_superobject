@@ -29,12 +29,16 @@ interface
 uses
   Classes, SysUtils,SuperObject;
 
+type
+  TStrArray = Array of String;
+
 function StringList2SuperObject(St:TStringList):ISuperObject;
 function SplitLines(const St:String):ISuperObject;
 function Split(const St: String; Sep: String): ISuperObject;
 function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
 function DynArr2SuperObject(const items: Array of String):ISuperObject;
+function SOArray2StrArray(items: ISuperObject):TStrArray;
 function StrToken(var S: string; Separator: String): string;
 function ExtractField(SOList:ISuperObject;fieldname:String):ISuperObject;
 
@@ -51,6 +55,25 @@ function SOArrayFindFirst(AnObject, List: ISuperObject; keys: array of String): 
 implementation
 
 uses StrUtils,character,superdate;
+
+function SOArray2StrArray(items: ISuperObject): TStrArray;
+var
+  s:ISuperObject;
+  i:integer;
+begin
+  if (items<>Nil) and (items.AsArray<>Nil) then
+  begin
+    SetLength(result,items.AsArray.Length);
+    i:= 0;
+    for s in items do
+    begin
+      result[i] := s.AsString;
+      inc(i);
+    end;
+  end
+  else
+    SetLength(result,0);
+end;
 
 function StrToken(var S: string; Separator: String): string;
 var
