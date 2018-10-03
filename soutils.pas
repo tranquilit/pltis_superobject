@@ -50,7 +50,10 @@ procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
 
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
 
+// return an object with only keys attributes. If keys is empty, return SO itself.
 function SOExtractFields(SO:ISuperObject;const keys: Array of String):ISuperObject;
+
+//Compare 2 SO objects given a list of keys
 function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String): TSuperCompareResult;
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String): ISuperobject;
 function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
@@ -424,9 +427,10 @@ begin
         Result :=  cpLess;
     end
     else
+      // TODO: problem when comparison returns cpError
       Result := SO1[key].Compare(SO2[key]);
 
-    if Result <> cpEqu then
+    if (Result <> cpEqu) then
       break;
   end;
 end;
