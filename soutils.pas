@@ -50,7 +50,11 @@ procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
 
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
 
-function SOArrayFindFirst(AnObject, List: ISuperObject; keys: array of String): ISuperobject;
+function SOExtractFields(SO:ISuperObject;const keys: Array of String):ISuperObject;
+function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String): TSuperCompareResult;
+function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String): ISuperobject;
+function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
+
 
 implementation
 
@@ -361,7 +365,73 @@ begin
     QuickSort(0,SOArray.AsArray.Length-1);
 end;
 
-function SOArrayFindFirst(AnObject, List: ISuperObject; keys: array of String
+function SOExtractFields(SO: ISuperObject; const keys: array of String): ISuperObject;
+var
+  key: String;
+begin
+  if length(keys) = 0 then
+    Result := SO
+  else
+  begin
+    result := TSuperObject.Create(stObject);
+    for key in keys do
+      Result[key] := SO[key];
+  end;
+end;
+
+function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
+var
+  i,j:integer;
+begin
+  SetLength(Result,0);
+  for i:=0 to Length(a1)-1 do
+  begin
+    for j := 0 to Length(a2)-1 do
+    begin
+      if a1[i] = a2[j] then
+      begin
+        SetLength(result,Length(Result)+1);
+        result[Length(result)-1] := a1[i];
+      end;
+    end;
+  end;
+end;
+
+function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String): TSuperCompareResult;
+var
+  i: integer;
+  key: String;
+  reckeys: Array of String;
+begin
+  // If no key property names, take all common attributes names to make comparison.
+  if length(keys) = 0 then
+    reckeys := StrArrayIntersect(SOArray2StrArray(SO1.AsObject.GetNames()),SOArray2StrArray(SO2.AsObject.GetNames()))
+  else
+  begin
+    SetLength(reckeys,length(keys));
+    for i := 0 to length(keys)-1 do
+      reckeys[i] := keys[i];
+  end;
+
+  for key in reckeys do
+  begin
+    if (SO1[key] = Nil) then
+    begin
+      if SO2[key] = Nil then
+        Result := cpEqu
+      else
+        // Nil first
+        Result :=  cpLess;
+    end
+    else
+      Result := SO1[key].Compare(SO2[key]);
+
+    if Result <> cpEqu then
+      break;
+  end;
+end;
+
+function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String
   ): ISuperobject;
 var
   item: ISuperObject;
