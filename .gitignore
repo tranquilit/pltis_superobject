@@ -20,3 +20,4 @@ source.old
 .DS_store
 backup
 /*.bak
+/source/*.bak
