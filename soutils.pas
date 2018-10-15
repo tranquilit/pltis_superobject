@@ -464,13 +464,13 @@ begin
     begin
       if (key<>'') then
       begin
-        if (SO1[key] = Nil) and (SO2[key] = Nil) then
+        if (SO1[key] = Nil) and (SO2[key] = Nil) or (ObjectIsNull(SO1[key]) and ObjectIsNull(SO2[key])) then
           // both objects have no value with this key.
           Result := cpEqu
-        else if (SO1[key] = Nil) and (SO2[key] <> Nil) then
+        else if ((SO1[key] = Nil) or ObjectIsNull(SO1[key])) and ((SO2[key] <> Nil) and not ObjectIsNull(SO1[key])) then
           // Nil first
           Result :=  cpLess
-        else if (SO1[key] <> Nil) and (SO2[key] = Nil) then
+        else if ((SO1[key] <> Nil) and not ObjectIsNull(SO1[key])) and ((SO2[key] = Nil) or ObjectIsNull(SO2[key])) then
           // Nil first
           Result :=  cpGreat
         else
