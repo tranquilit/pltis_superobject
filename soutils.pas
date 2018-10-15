@@ -44,18 +44,29 @@ function ExtractField(SOList:ISuperObject;fieldname:String):ISuperObject;
 
 function csv2SO(csv:UTF8String;Sep:Char=#0):ISuperObject;
 
+// Compare 2 values given their PropertyName
+type TSOCompareByPropertyName=function (const PropertyName:String;const d1,d2:ISuperObject):TSuperCompareResult;
+
 type TSOCompare=function (SOArray:ISuperObject;idx1,idx2:integer):integer;
+
+// Default function to QuickSort an arrays of SuperObject.
 function DefaultSOCompareFunc(SOArray:ISuperObject;idx1,idx2:integer):integer;
+
 procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
 
+// Sort the Array SOArray using the composite key described by keys array
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
 
 // return an object with only keys attributes. If keys is empty, return SO itself.
 function SOExtractFields(SO:ISuperObject;const keys: Array of String):ISuperObject;
 
 //Compare 2 SO objects given a list of keys
-function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String): TSuperCompareResult;
+function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;const CompareFunc:TSOCompareByPropertyName=Nil): TSuperCompareResult;
+
+// Return the first occurence of AnObject in the List of objects, using the composite key described by keys array
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String): ISuperobject;
+
+// Return the intersection if 2 array of string
 function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
 
 
@@ -400,39 +411,81 @@ begin
   end;
 end;
 
-function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String): TSuperCompareResult;
+// Compare 2 objects SO1 and SO2 by comparing each key value in turn. If CompareFunc is supplied, comparison function can be based on the key name
+function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;const CompareFunc:TSOCompareByPropertyName=Nil): TSuperCompareResult;
 var
   i: integer;
   key: String;
   reckeys: Array of String;
 begin
+  // Nil is Less than something..
+  if (SO1=Nil) and (SO2<>Nil) then
+  begin
+    Result := cpLess;
+    exit;
+  end
+  else
+  if (SO1<>Nil) and (SO2=Nil) then
+  begin
+    Result := cpGreat;
+    exit;
+  end
+  else
+  // can not compare nothing
+  if (SO1=Nil) and (SO2=Nil) then
+  begin
+    Result := cpError;
+    exit;
+  end
+  else
+  // can not compare objects which have no keys...
+  if (SO1.AsObject=Nil) or (SO2.AsObject=Nil) then
+  begin
+    Result := cpError;
+    exit;
+  end;
+
   // If no key property names, take all common attributes names to make comparison.
   if length(keys) = 0 then
     reckeys := StrArrayIntersect(SOArray2StrArray(SO1.AsObject.GetNames()),SOArray2StrArray(SO2.AsObject.GetNames()))
   else
   begin
+    // copy list of keys passed as parameter
     SetLength(reckeys,length(keys));
     for i := 0 to length(keys)-1 do
       reckeys[i] := keys[i];
   end;
 
-  for key in reckeys do
-  begin
-    if (SO1[key] = Nil) then
+  // If no key -> error
+  if (length(reckeys) = 0) then
+    result := cpError
+  else
+    for key in reckeys do
     begin
-      if SO2[key] = Nil then
-        Result := cpEqu
+      if (key<>'') then
+      begin
+        if (SO1[key] = Nil) and (SO2[key] = Nil) then
+          // both objects have no value with this key.
+          Result := cpEqu
+        else if (SO1[key] = Nil) and (SO2[key] <> Nil) then
+          // Nil first
+          Result :=  cpLess
+        else if (SO1[key] <> Nil) and (SO2[key] = Nil) then
+          // Nil first
+          Result :=  cpGreat
+        else
+          // TODO: problem when comparison returns cpError
+          if not Assigned(CompareFunc) then
+            Result := SO1[key].Compare(SO2[key])
+          else
+            Result := CompareFunc(key,SO1[key],SO2[key]);
+      end
       else
-        // Nil first
-        Result :=  cpLess;
-    end
-    else
-      // TODO: problem when comparison returns cpError
-      Result := SO1[key].Compare(SO2[key]);
+        Result := cpEqu;
 
-    if (Result <> cpEqu) then
-      break;
-  end;
+      if (Result <> cpEqu) then
+        break;
+    end;
 end;
 
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String
