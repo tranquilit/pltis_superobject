@@ -476,7 +476,12 @@ begin
         else
           // TODO: problem when comparison returns cpError
           if not Assigned(CompareFunc) then
-            Result := SO1[key].Compare(SO2[key])
+          begin
+            if SO1[key] <> Nil then
+              Result := SO1[key].Compare(SO2[key])
+            else
+              Result := cpEqu;
+          end
           else
             Result := CompareFunc(key,SO1[key],SO2[key]);
       end
