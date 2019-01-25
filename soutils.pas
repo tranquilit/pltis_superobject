@@ -40,7 +40,8 @@ function StrIn(const St: String; List:ISuperObject): Boolean;
 function DynArr2SuperObject(const items: Array of String):ISuperObject;
 function SOArray2StrArray(items: ISuperObject):TStrArray;
 function StrToken(var S: string; Separator: String): string;
-function ExtractField(SOList:ISuperObject;fieldname:String):ISuperObject;
+function ExtractField(SOList:ISuperObject;const fieldname:String):ISuperObject;
+function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
 
 function csv2SO(csv:UTF8String;Sep:Char=#0):ISuperObject;
 
@@ -159,7 +160,7 @@ begin
   end;
 end;
 
-function ExtractField(SOList:ISuperObject;fieldname:String):ISuperObject;
+function ExtractField(SOList:ISuperObject;const fieldname:String):ISuperObject;
 var
   item:ISuperObject;
 begin
@@ -177,6 +178,24 @@ begin
   else
     Result := Nil;
 end;
+
+function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
+var
+  item:ISuperObject;
+begin
+  if(SOList<>Nil) then
+  begin
+    if (SOList.DataType <> stArray) then
+      Raise Exception.Create('Need a TSuperObject Array');
+
+    Result := TSuperObject.Create(stArray);
+    for item in SOList do
+      Result.AsArray.Add(SOExtractFields(item,keys))
+  end
+  else
+    Result := Nil;
+end;
+
 
 function Join(const Sep: String; Arr: ISuperObject): String;
 var
