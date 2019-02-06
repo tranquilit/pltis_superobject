@@ -43,7 +43,7 @@ function StrToken(var S: string; Separator: String): string;
 function ExtractField(SOList:ISuperObject;const fieldname:String):ISuperObject;
 function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
 
-function csv2SO(csv:UTF8String;Sep:Char=#0):ISuperObject;
+function csv2SO(csv:String;Sep:Char=#0):ISuperObject;
 
 // Compare 2 values given their PropertyName
 type TSOCompareByPropertyName=function (const PropertyName:String;const d1,d2:ISuperObject):TSuperCompareResult;
@@ -73,7 +73,7 @@ function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
 
 implementation
 
-uses StrUtils,character,superdate;
+uses StrUtils;
 
 function SOArray2StrArray(items: ISuperObject): TStrArray;
 var
@@ -86,7 +86,7 @@ begin
     i:= 0;
     for s in items do
     begin
-      result[i] := s.AsString;
+      result[i] := Utf8Encode(s.AsString);
       inc(i);
     end;
   end
@@ -142,7 +142,7 @@ begin
   while St2<>'' do
   begin
     tok := StrToken(St2,#13);
-    Result.AsArray.Add(tok);
+    Result.AsArray.Add(UTF8Decode(tok));
   end;
 end;
 
@@ -220,7 +220,6 @@ end;
 function StrIn(const St: String; List: ISuperObject): Boolean;
 var
   it:ISuperObject;
-  st1,st2:String;
 begin
   if List <>Nil then
     for it in List do
@@ -234,14 +233,14 @@ begin
   result := False;
 end;
 
-function csv2SO(csv: UTF8String;Sep:Char=#0): ISuperObject;
+function csv2SO(csv: String;Sep:Char=#0): ISuperObject;
 var
   r,col,maxcol:integer;
   row : String;
   Lines,header,values,newrec:ISuperObject;
 begin
   lines := SplitLines(csv);
-  row := lines.AsArray.S[0];
+  row := UTF8Encode(lines.AsArray.S[0]);
   if Sep=#0 then
   begin
     if pos(#9,row)>0 then
@@ -259,7 +258,7 @@ begin
   if Lines.AsArray.Length>1 then
     for r:=1 to lines.AsArray.Length-1 do
     begin
-      row := lines.AsArray.S[r];
+      row := Utf8Encode(lines.AsArray.S[r]);
       values :=Split(row,sep);
       Newrec := TSuperObject.Create;
       result.AsArray.Add(newrec);
@@ -268,7 +267,7 @@ begin
         maxcol := header.AsArray.Length;
 
       for col := 0 to maxcol-1 do
-        newrec.S[header.AsArray.S[col]] := UTF8Decode(values.AsArray.S[col]);
+        newrec.S[header.AsArray.S[col]] := values.AsArray.S[col];
     end
   else
   begin
@@ -292,7 +291,7 @@ begin
     cpLess : Result := -1;
     cpEqu  : Result := 0;
     cpGreat : Result := 1;
-    cpError :  Result := CompareStr(SO1.AsString,SO2.AsString);
+    cpError :  Result := CompareStr(Utf8Encode(SO1.AsString),Utf8Encode(SO2.AsString));
   end;
 end;
 
@@ -354,7 +353,7 @@ procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
         cpLess : Result := -1;
         cpEqu  : Result := 0;
         cpGreat : Result := 1;
-        cpError :  Result := CompareStr(F1.AsString,F2.AsString);
+        cpError :  Result := CompareStr(Utf8Encode(F1.AsString),Utf8Encode(F2.AsString));
       end;
       if Result<>0 then
         Break;
