@@ -56,7 +56,7 @@ function DefaultSOCompareFunc(SOArray:ISuperObject;idx1,idx2:integer):integer;
 procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
 
 // Sort the Array SOArray using the composite key described by keys array
-procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
+procedure SortByFields(SOArray: ISuperObject;Fields:array of string;reversed:Boolean=False);
 
 // return an object with only keys attributes. If keys is empty, return SO itself.
 function SOExtractFields(SO:ISuperObject;const keys: Array of String):ISuperObject;
@@ -335,7 +335,7 @@ begin
     QuickSort(0,SOArray.AsArray.Length-1,CompareFunc);
 end;
 
-procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
+procedure SortByFields(SOArray: ISuperObject;Fields:array of string;reversed:Boolean=False);
   function SOCompareFields(SOArray:ISuperObject;idx1,idx2:integer):integer;
   var
     compresult : TSuperCompareResult;
@@ -355,6 +355,7 @@ procedure SortByFields(SOArray: ISuperObject;Fields:array of string);
         cpGreat : Result := 1;
         cpError :  Result := CompareStr(Utf8Encode(F1.AsString),Utf8Encode(F2.AsString));
       end;
+      if Reversed then Result := -Result;
       if Result<>0 then
         Break;
     end;
