@@ -70,10 +70,21 @@ function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of Str
 // Return the intersection if 2 array of string
 function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
 
+function CompareInt(i1,i2: LongInt):Integer;
+
 
 implementation
 
 uses StrUtils;
+
+function CompareInt(i1,i2: LongInt):Integer;
+begin
+  if i1<i2 then Result := -1 else
+  if i1>i2 then Result := 1 else
+  Result := 0;
+end;
+
+
 
 function SOArray2StrArray(items: ISuperObject): TStrArray;
 var
