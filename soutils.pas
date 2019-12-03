@@ -72,6 +72,7 @@ function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
 
 function CompareInt(i1,i2: LongInt):Integer;
 
+function GetIntCompResult(const i: int64): TSuperCompareResult;
 
 implementation
 
@@ -84,6 +85,12 @@ begin
   Result := 0;
 end;
 
+function GetIntCompResult(const i: int64): TSuperCompareResult;
+begin
+  if i < 0 then result := cpLess else
+  if i = 0 then result := cpEqu else
+    Result := cpGreat;
+end;
 
 
 function SOArray2StrArray(items: ISuperObject): TStrArray;
