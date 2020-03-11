@@ -29,16 +29,13 @@ interface
 uses
   Classes, SysUtils,SuperObject;
 
-type
-  TStrArray = Array of String;
-
 function StringList2SuperObject(St:TStringList):ISuperObject;
 function SplitLines(const St:String):ISuperObject;
 function Split(const St: String; Sep: String): ISuperObject;
 function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
 function DynArr2SuperObject(const items: Array of String):ISuperObject;
-function SOArray2StrArray(items: ISuperObject):TStrArray;
+function SOArray2StrArray(items: ISuperObject):TStringArray;
 function StrToken(var S: string; Separator: String): string;
 function ExtractField(SOList:ISuperObject;const fieldname:String):ISuperObject;
 function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
@@ -61,6 +58,9 @@ procedure SortByFields(SOArray: ISuperObject;Fields:array of string;reversed:Boo
 // return an object with only keys attributes. If keys is empty, return SO itself.
 function SOExtractFields(SO:ISuperObject;const keys: Array of String):ISuperObject;
 
+// extract one string property as an array of string
+function SOExtractStringField(SOList:ISuperObject;const fieldname:String):TStringArray;
+
 //Compare 2 SO objects given a list of keys
 function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;const CompareFunc:TSOCompareByPropertyName=Nil): TSuperCompareResult;
 
@@ -68,7 +68,7 @@ function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;con
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String): ISuperobject;
 
 // Return the intersection if 2 array of string
-function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
+function StrArrayIntersect(const a1,a2:TStringArray):TStringArray;
 
 function CompareInt(i1,i2: LongInt):Integer;
 
@@ -93,7 +93,7 @@ begin
 end;
 
 
-function SOArray2StrArray(items: ISuperObject): TStrArray;
+function SOArray2StrArray(items: ISuperObject): TStringArray;
 var
   s:ISuperObject;
   i:integer;
@@ -191,6 +191,29 @@ begin
         Result.AsArray.Add(item[fieldname])
       else if Item.DataType = stArray then
         Result.AsArray.Add(item.AsArray[StrToInt(fieldname)]);
+    end;
+  end
+  else
+    Result := Nil;
+end;
+
+
+function SOExtractStringField(SOList:ISuperObject;const fieldname:String):TStringArray;
+var
+  item:ISuperObject;
+  i: integer;
+begin
+  if (SOList<>Nil) and (SOList.AsArray<>Nil) then
+  begin
+    SetLength(Result,SOList.AsArray.Length);
+    i := 0;
+    for item in SOList do
+    begin
+      if Item.DataType = stObject then
+        Result[i] := item.S[fieldname]
+      else if Item.DataType = stArray then
+        Result[i] := item.AsArray.S[StrToInt(fieldname)];
+      inc(i);
     end;
   end
   else
@@ -430,7 +453,7 @@ begin
   end;
 end;
 
-function StrArrayIntersect(const a1,a2:TStrArray):TStrArray;
+function StrArrayIntersect(const a1,a2:TStringArray):TStringArray;
 var
   i,j:integer;
 begin
