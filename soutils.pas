@@ -52,6 +52,9 @@ function DefaultSOCompareFunc(SOArray:ISuperObject;idx1,idx2:integer):integer;
 
 procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
 
+//
+procedure SOArrayExtend(const TargetArray,NewElements:ISuperObject);
+
 // Sort the Array SOArray using the composite key described by keys array
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string;reversed:Boolean=False);
 
@@ -374,6 +377,14 @@ begin
      CompareFunc :=  @DefaultSOCompareFunc;
   if (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
     QuickSort(0,SOArray.AsArray.Length-1,CompareFunc);
+end;
+
+procedure SOArrayExtend(const TargetArray, NewElements: ISuperObject);
+var
+  Elem: ISuperObject;
+begin
+  For Elem in NewElements do
+    TargetArray.AsArray.Add(Elem);
 end;
 
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string;reversed:Boolean=False);
