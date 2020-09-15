@@ -29,13 +29,18 @@ interface
 uses
   Classes, SysUtils,SuperObject;
 
-function StringList2SuperObject(St:TStringList):ISuperObject;
+function StringList2SOArray(St:TStringList):ISuperObject;
+function StringArray2SOArray(A:TStringArray):ISuperObject;
+function DynArr2SOArray(const items: Array of String):ISuperObject;
+
+function SOArray2StringArray(items: ISuperObject):TStringArray;
+
+function MergeSOArrays(A,B:ISuperObject):ISuperObject;
+
 function SplitLines(const St:String):ISuperObject;
 function Split(const St: String; Sep: String): ISuperObject;
 function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
-function DynArr2SuperObject(const items: Array of String):ISuperObject;
-function SOArray2StrArray(items: ISuperObject):TStringArray;
 function StrToken(var S: string; Separator: String): string;
 function ExtractField(SOList:ISuperObject;const fieldname:String):ISuperObject;
 function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
@@ -93,7 +98,7 @@ begin
 end;
 
 
-function SOArray2StrArray(items: ISuperObject): TStringArray;
+function SOArray2StringArray(items: ISuperObject): TStringArray;
 var
   s:ISuperObject;
   i:integer;
@@ -129,7 +134,7 @@ begin
   end;
 end;
 
-function DynArr2SuperObject(const items: Array of String):ISuperObject;
+function DynArr2SOArray(const items: Array of String):ISuperObject;
 var
   i:integer;
 begin
@@ -140,7 +145,7 @@ begin
 end;
 
 
-function StringList2SuperObject(St: TStringList): ISuperObject;
+function StringList2SOArray(St: TStringList): ISuperObject;
 var
   i:integer;
 begin
@@ -461,7 +466,7 @@ begin
   end;
 end;
 
-function StrArrayIntersect(const a1,a2:TStringArray):TStringArray;
+function StringArrayIntersect(const a1,a2:TStringArray):TStringArray;
 var
   i,j:integer;
 begin
@@ -515,7 +520,7 @@ begin
 
   // If no key property names, take all common attributes names to make comparison.
   if length(keys) = 0 then
-    reckeys := StrArrayIntersect(SOArray2StrArray(SO1.AsObject.GetNames()),SOArray2StrArray(SO2.AsObject.GetNames()))
+    reckeys := StringArrayIntersect(SOArray2StringArray(SO1.AsObject.GetNames()),SOArray2StringArray(SO2.AsObject.GetNames()))
   else
   begin
     // copy list of keys passed as parameter
@@ -591,6 +596,36 @@ begin
         exit;
       end;
     end;
+  end;
+end;
+
+
+function StringArray2SOArray(A:TStringArray):ISuperObject;
+var
+  s:String;
+begin
+  Result := TSuperObject.Create(stArray);
+  for s in A do
+    Result.AsArray.Add(s);
+end;
+
+function MergeSOArrays(A,B:ISuperObject):ISuperObject;
+var
+  item,itemA:ISuperObject;
+  DoAppend: Boolean;
+begin
+  result := A.Clone;
+  for item in B do
+  begin
+    DoAppend := True;
+    for itemA in result do
+      if itemA.Compare(item) = cpEqu then
+      begin
+        DoAppend := False;
+        break;
+      end;
+    if DoAppend then
+      result.AsArray.Add(item);
   end;
 end;
 
