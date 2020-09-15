@@ -70,9 +70,6 @@ function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;con
 // Return the first occurence of AnObject in the List of objects, using the composite key described by keys array
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String): ISuperobject;
 
-// Return the intersection if 2 array of string
-function StrArrayIntersect(const a1,a2:TStringArray):TStringArray;
-
 function CompareInt(i1,i2: LongInt):Integer;
 
 function GetIntCompResult(const i: int64): TSuperCompareResult;
