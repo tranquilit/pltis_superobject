@@ -45,6 +45,11 @@ function StrToken(var S: string; Separator: String): string;
 function ExtractField(SOList:ISuperObject;const fieldname:String):ISuperObject;
 function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
 
+// expand an array of array to an array of dict. All items must have same count of cell
+// fieldnames of cell is in ColumnNames
+function SOArrayArrayExpand(SOArray:ISuperobject;ColumnNames: TStringArray): ISuperObject;
+function SOArrayArrayExpand(SOArray: ISuperobject; ColumnName: String ): ISuperObject;
+
 function csv2SO(csv:String;Sep:Char=#0):ISuperObject;
 
 // Compare 2 values given their PropertyName
@@ -74,6 +79,8 @@ function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;con
 
 // Return the first occurence of AnObject in the List of objects, using the composite key described by keys array
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String): ISuperobject;
+
+function SOArrayIndexOf(AnObject, List: ISuperObject): Integer;
 
 function CompareInt(i1,i2: LongInt):Integer;
 
@@ -277,6 +284,34 @@ begin
       end;
     end;
   result := False;
+end;
+
+function SOArrayArrayExpand(SOArray: ISuperobject; ColumnNames: TStringArray
+  ): ISuperObject;
+
+var
+  item,cell,row: ISUperObject;
+  i: integer;
+begin
+  Result := TSuperObject.Create(stArray);
+  for item in SOArray do
+  begin
+    row := SO();
+    for i:=0 to length(ColumnNames)-1 do
+      row[ColumnNames[i]] := item.AsArray[i];
+    Result.AsArray.Add(row);
+  end;
+end;
+
+function SOArrayArrayExpand(SOArray: ISuperobject; ColumnName: String
+  ): ISuperObject;
+var
+  item: ISUperObject;
+begin
+  Result := TSuperObject.Create(stArray);
+  for item in SOArray do
+    // single item
+    Result.AsArray.Add(SO([ColumnName, item]));
 end;
 
 function csv2SO(csv: String;Sep:Char=#0): ISuperObject;
@@ -577,7 +612,7 @@ begin
   begin
     if length(keys) = 0 then
     begin
-      if item.Compare(AnObject) = cpEqu then
+      if (item = AnObject) or (item.Compare(AnObject) = cpEqu) then
       begin
         Result := item;
         exit;
@@ -599,6 +634,15 @@ begin
   end;
 end;
 
+function SOArrayIndexOf(AnObject, List: ISuperObject): Integer;
+var
+  item: ISuperObject;
+begin
+  for result := 0 to List.AsArray.Length-1 do
+    if (List.AsArray[Result] = AnObject) or (List.AsArray[Result].Compare(AnObject) = cpEqu) then
+      exit;
+  Result := -1;
+end;
 
 function StringArray2SOArray(A:TStringArray):ISuperObject;
 var
