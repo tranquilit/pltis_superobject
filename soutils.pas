@@ -309,9 +309,10 @@ var
   item: ISUperObject;
 begin
   Result := TSuperObject.Create(stArray);
-  for item in SOArray do
-    // single item
-    Result.AsArray.Add(SO([ColumnName, item]));
+  if Assigned(SOArray) then
+    for item in SOArray do
+      // single item
+      Result.AsArray.Add(SO([ColumnName, item]));
 end;
 
 function csv2SO(csv: String;Sep:Char=#0): ISuperObject;
