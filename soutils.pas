@@ -42,7 +42,7 @@ function Split(const St: String; Sep: String): ISuperObject;
 function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
 function StrToken(var S: string; Separator: String): string;
-function ExtractField(SOList:ISuperObject;const fieldname:String):ISuperObject;
+function ExtractField(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolean=True):ISuperObject;
 function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
 
 // expand an array of array to an array of dict. All items must have same count of cell
@@ -190,7 +190,7 @@ begin
   end;
 end;
 
-function ExtractField(SOList:ISuperObject;const fieldname:String):ISuperObject;
+function ExtractField(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolean=True):ISuperObject;
 var
   item:ISuperObject;
 begin
@@ -206,7 +206,10 @@ begin
     end;
   end
   else
-    Result := Nil;
+    if NilIfNil then
+      Result := Nil
+    else
+      Result := SA([]);
 end;
 
 
