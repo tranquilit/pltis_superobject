@@ -69,7 +69,10 @@ procedure SOArrayExtend(const TargetArray,NewElements:ISuperObject);
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string;reversed:Boolean=False);
 
 // return an object with only keys attributes. If keys is empty, return SO itself.
-function SOExtractFields(SO:ISuperObject;const keys: Array of String):ISuperObject;
+function SOExtractFields(SO:ISuperObject; const keys: Array of String):ISuperObject;
+
+// return an object without the  ExcludedKeys attributes. If ExcludedKeys is empty, return SO itself.
+function SOFilterFields(SO:ISuperObject; const ExcludedKeys: Array of String):ISuperObject;
 
 // extract one string property as an array of string
 function SOExtractStringField(SOList:ISuperObject;const fieldname:String):TStringArray;
@@ -89,6 +92,18 @@ function GetIntCompResult(const i: int64): TSuperCompareResult;
 implementation
 
 uses StrUtils;
+
+operator in(const a:string;b:Array Of String):Boolean;inline;
+var i:integer;
+begin
+  Result := False;
+  for i :=Low(b) to High(b) do
+    if a = b[i] then
+    begin
+      Result := True;
+      Break;
+    end;
+end;
 
 function CompareInt(i1,i2: LongInt):Integer;
 begin
@@ -141,7 +156,7 @@ begin
   end;
 end;
 
-function DynArr2SOArray(const items: Array of String):ISuperObject;
+function DynArr2SOArray(const items: array of String): ISuperObject;
 var
   i:integer;
 begin
@@ -212,6 +227,21 @@ begin
       Result := SA([]);
 end;
 
+function SOFilterFields(SO: ISuperObject; const ExcludedKeys: array of String
+  ): ISuperObject;
+var
+  key: ISuperObject;
+begin
+  if length(ExcludedKeys) = 0 then
+    Result := SO
+  else
+  begin
+    result := TSuperObject.Create(stObject);
+    for key in SO.AsObject.GetNames do
+      if not (key.AsString in ExcludedKeys) then
+        Result[key.AsString] := SO[key.AsString];
+  end;
+end;
 
 function SOExtractStringField(SOList:ISuperObject;const fieldname:String):TStringArray;
 var
@@ -235,7 +265,8 @@ begin
     Result := Nil;
 end;
 
-function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
+function ExtractFields(SOList: ISuperObject; const keys: array of String
+  ): ISuperObject;
 var
   item:ISuperObject;
 begin
