@@ -85,7 +85,7 @@ function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of Str
 
 function SOArrayIndexOf(AnObject, List: ISuperObject): Integer;
 
-function CompareInt(i1,i2: LongInt):Integer;
+function CompareInt(i1,i2: Int64):Integer;
 
 function GetIntCompResult(const i: int64): TSuperCompareResult;
 
@@ -105,7 +105,7 @@ begin
     end;
 end;
 
-function CompareInt(i1,i2: LongInt):Integer;
+function CompareInt(i1,i2: Int64):Integer;
 begin
   if i1<i2 then Result := -1 else
   if i1>i2 then Result := 1 else
