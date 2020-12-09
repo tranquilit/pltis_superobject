@@ -55,12 +55,12 @@ function csv2SO(csv:String;Sep:Char=#0):ISuperObject;
 // Compare 2 values given their PropertyName
 type TSOCompareByPropertyName=function (const PropertyName:String;const d1,d2:ISuperObject):TSuperCompareResult;
 
-type TSOCompare=function (SOArray:ISuperObject;idx1,idx2:integer):integer;
+type TSOCompare=function (const SO1,SO2:ISuperObject):integer;
 
 // Default function to QuickSort an arrays of SuperObject.
-function DefaultSOCompareFunc(SOArray:ISuperObject;idx1,idx2:integer):integer;
+function DefaultSOCompareFunc(const SO1,SO2:ISuperObject):integer;
 
-procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
+procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare;Reversed:Boolean=False);
 
 //
 procedure SOArrayExtend(const TargetArray,NewElements:ISuperObject);
@@ -78,7 +78,7 @@ function SOFilterFields(SO:ISuperObject; const ExcludedKeys: Array of String):IS
 function SOExtractStringField(SOList:ISuperObject;const fieldname:String):TStringArray;
 
 //Compare 2 SO objects given a list of keys
-function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;const CompareFunc:TSOCompareByPropertyName=Nil): TSuperCompareResult;
+function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;const CompareFunc:TSOCompareByPropertyName=Nil;DirectProperties:Boolean=False): TSuperCompareResult;
 
 // Return the first occurence of AnObject in the List of objects, using the composite key described by keys array
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String): ISuperobject;
@@ -394,14 +394,11 @@ begin
   end;
 end;
 
-function DefaultSOCompareFunc(SOArray:ISuperObject;idx1,idx2:integer):integer;
+function DefaultSOCompareFunc(const SO1,SO2:ISuperObject):integer;
 var
   compresult : TSuperCompareResult;
-  SO1,SO2:ISuperObject;
 
 begin
-  SO1 := SOArray.AsArray[idx1];
-  SO2 := SOArray.AsArray[idx2];
   compresult := SO1.Compare(SO2);
   case compresult of
     cpLess : Result := -1;
@@ -411,44 +408,41 @@ begin
   end;
 end;
 
-procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare);
-  procedure QuickSort(L, R: integer;CompareFunc: TSOCompare);
+procedure Sort(SOArray: ISuperObject;CompareFunc: TSOCompare;Reversed:Boolean=False);
+var
+  IReversed:Integer;
+
+  procedure QuickSort(L, R: integer;CompareFunc: TSOCompare;IReversed:Integer=1);
   var
-    I, J, P: Integer;
-    item1,item2:ISuperObject;
+    I, J : Integer;
+    pivot, temp:ISuperObject;
   begin
+    I := L;
+    J := R;
+    pivot := SOArray.AsArray[(L + R) div 2];
     repeat
-      I := L;
-      J := R;
-      P := (L + R) shr 1;
-      repeat
-        while CompareFunc(SOArray, I, P) < 0 do Inc(I);
-        while CompareFunc(SOArray,J, P) > 0 do Dec(J);
-        if I <= J then
-        begin
-          //exchange items
-          item1 := SOArray.AsArray[I];
-          item2 := SOArray.AsArray[J];
-          SOArray.AsArray[I] := item2;
-          SOArray.AsArray[J] := item1;
-          if P = I then
-            P := J
-          else if P = J then
-            P := I;
-          Inc(I);
-          Dec(J);
-        end;
-      until I > J;
-      if L < J then QuickSort(L, J, CompareFunc);
-      L := I;
-    until I >= R;
+      while (IReversed*CompareFunc(SOArray.AsArray[I], pivot) < 0) do Inc(I);
+      while (IReversed*CompareFunc(SOArray.AsArray[J], pivot) > 0) do Dec(J);
+      if I <= J then
+      begin
+        //exchange items
+        temp := SOArray.AsArray[I];
+        SOArray.AsArray[I] := SOArray.AsArray[J];
+        SOArray.AsArray[J] := temp;
+        Inc(I);
+        Dec(J);
+      end;
+    until I > J;
+    if J > L then QuickSort(L, J, CompareFunc,IReversed);
+    if I < R then QuickSort(I, R, CompareFunc,IReversed);
   end;
 
 begin
+  if Reversed then IReversed:=-1 else IReversed:=1;
   If CompareFunc=Nil then
      CompareFunc :=  @DefaultSOCompareFunc;
   if (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
-    QuickSort(0,SOArray.AsArray.Length-1,CompareFunc);
+    QuickSort(0,SOArray.AsArray.Length-1,CompareFunc,IReversed);
 end;
 
 procedure SOArrayExtend(const TargetArray, NewElements: ISuperObject);
@@ -555,11 +549,12 @@ begin
 end;
 
 // Compare 2 objects SO1 and SO2 by comparing each key value in turn. If CompareFunc is supplied, comparison function can be based on the key name
-function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;const CompareFunc:TSOCompareByPropertyName=Nil): TSuperCompareResult;
+function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;const CompareFunc:TSOCompareByPropertyName=Nil;DirectProperties:Boolean=False): TSuperCompareResult;
 var
   i: integer;
   key: String;
   reckeys: Array of String;
+  PropValue1,PropValue2: ISuperObject;
 begin
   // Nil is Less than something..
   if (SO1=Nil) and (SO2<>Nil) then
@@ -607,26 +602,37 @@ begin
     begin
       if (key<>'') then
       begin
-        if (SO1[key] = Nil) and (SO2[key] = Nil) or (ObjectIsNull(SO1[key]) and ObjectIsNull(SO2[key])) then
+        if DirectProperties then
+        begin
+          PropValue1 := SO1.AsObject[key];
+          PropValue2 := SO2.AsObject[key];
+        end
+        else
+        begin
+          PropValue1 := SO1[key];
+          PropValue2 := SO2[key];
+        end;
+
+        if (PropValue1 = Nil) and (PropValue2 = Nil) or (ObjectIsNull(PropValue1) and ObjectIsNull(PropValue2)) then
           // both objects have no value with this key.
           Result := cpEqu
-        else if ((SO1[key] = Nil) or ObjectIsNull(SO1[key])) and ((SO2[key] <> Nil) and not ObjectIsNull(SO1[key])) then
+        else if ((PropValue1 = Nil) or ObjectIsNull(PropValue1)) and ((PropValue2 <> Nil) and not ObjectIsNull(PropValue2)) then
           // Nil first
           Result :=  cpLess
-        else if ((SO1[key] <> Nil) and not ObjectIsNull(SO1[key])) and ((SO2[key] = Nil) or ObjectIsNull(SO2[key])) then
+        else if ((PropValue1 <> Nil) and not ObjectIsNull(PropValue1)) and ((PropValue2 = Nil) or ObjectIsNull(PropValue2)) then
           // Nil first
           Result :=  cpGreat
         else
           // TODO: problem when comparison returns cpError
           if not Assigned(CompareFunc) then
           begin
-            if SO1[key] <> Nil then
-              Result := SO1[key].Compare(SO2[key])
+            if PropValue1 <> Nil then
+              Result := PropValue1.Compare(PropValue2)
             else
               Result := cpEqu;
           end
           else
-            Result := CompareFunc(key,SO1[key],SO2[key]);
+            Result := CompareFunc(key,PropValue1,PropValue2);
       end
       else
         Result := cpEqu;
