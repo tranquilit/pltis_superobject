@@ -89,6 +89,11 @@ function CompareInt(i1,i2: Int64):Integer;
 
 function GetIntCompResult(const i: int64): TSuperCompareResult;
 
+function SOArrayIntersect(const a1,a2:ISuperObject):ISuperObject;
+
+function StringArrayIntersect(const a1,a2:TStringArray):TStringArray;
+
+
 implementation
 
 uses StrUtils;
@@ -529,6 +534,27 @@ begin
       Result[key] := SO[key];
   end;
 end;
+
+function SOArrayIntersect(const a1,a2:ISuperObject):ISuperObject;
+var
+  i,j:integer;
+begin
+  Result := Nil;
+  if assigned(a1) and assigned(a2) then
+    for i:=0 to a1.AsArray.Length -1 do
+    begin
+      for j := 0 to a2.AsArray.Length-1 do
+      begin
+        if a1.AsArray[i].Compare(a2.AsArray[j]) = cpEqu then
+        begin
+          if not Assigned(Result) then
+            Result := TSuperObject.Create(stArray);
+          Result.AsArray.Add(a1.AsArray[i]);
+        end;
+      end;
+    end;
+end;
+
 
 function StringArrayIntersect(const a1,a2:TStringArray):TStringArray;
 var
