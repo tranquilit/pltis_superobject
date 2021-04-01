@@ -42,7 +42,9 @@ function Split(const St: String; Sep: String): ISuperObject;
 function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
 function StrToken(var S: string; Separator: String): string;
+// create a new array with a field
 function ExtractField(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolean=True):ISuperObject;
+// create a new array with a subset of the fields
 function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
 
 // expand an array of array to an array of dict. All items must have same count of cell
