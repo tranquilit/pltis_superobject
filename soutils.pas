@@ -86,6 +86,10 @@ function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;con
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String): ISuperobject;
 
 function SOArrayIndexOf(AnObject, List: ISuperObject): Integer;
+function SOArrayIndexOf(const S:String; List: ISuperObject): Integer;
+
+// string splitted by comma.
+function SOEnsureList(StringOrArray: ISuperObject): ISuperObject;
 
 function CompareInt(i1,i2: Int64):Integer;
 
@@ -100,9 +104,10 @@ implementation
 
 uses StrUtils;
 
-operator in(const a:string;b:Array Of String):Boolean;inline;
+operator in(const a:string;const b:Array Of String):Boolean;inline;
 var i:integer;
 begin
+  //result := pos(a,b)>=0;
   Result := False;
   for i :=Low(b) to High(b) do
     if a = b[i] then
@@ -541,18 +546,14 @@ function SOArrayIntersect(const a1,a2:ISuperObject):ISuperObject;
 var
   i,j:integer;
 begin
-  Result := Nil;
+  Result := TSuperObject.Create(stArray);
   if assigned(a1) and assigned(a2) then
     for i:=0 to a1.AsArray.Length -1 do
     begin
       for j := 0 to a2.AsArray.Length-1 do
       begin
         if a1.AsArray[i].Compare(a2.AsArray[j]) = cpEqu then
-        begin
-          if not Assigned(Result) then
-            Result := TSuperObject.Create(stArray);
           Result.AsArray.Add(a1.AsArray[i]);
-        end;
       end;
     end;
 end;
@@ -707,10 +708,31 @@ function SOArrayIndexOf(AnObject, List: ISuperObject): Integer;
 var
   item: ISuperObject;
 begin
-  for result := 0 to List.AsArray.Length-1 do
-    if (List.AsArray[Result] = AnObject) or (List.AsArray[Result].Compare(AnObject) = cpEqu) then
-      exit;
+  if Assigned(List) and (List.DataType=stArray) then
+    for result := 0 to List.AsArray.Length-1 do
+      if (List.AsArray[Result] = AnObject) or (List.AsArray[Result].Compare(AnObject) = cpEqu) then
+        exit;
   Result := -1;
+end;
+
+function SOArrayIndexOf(const S: String; List: ISuperObject): Integer;
+begin
+  if Assigned(List) and (List.DataType=stArray) then
+    for result := 0 to List.AsArray.Length-1 do
+      if List.AsArray.S[Result] = S then
+        exit;
+  Result := -1;
+end;
+
+// string splitted by comma.
+function SOEnsureList(StringOrArray: ISuperObject): ISuperObject;
+begin
+  if not Assigned(StringOrArray) then
+    Result := TSuperObject.Create(stArray)
+  else if StringOrArray.DataType=stArray then
+    Result := StringOrArray
+  else
+    Result := SOUtils.Split(StringOrArray.AsString,',');
 end;
 
 function StringArray2SOArray(A:TStringArray):ISuperObject;
