@@ -34,6 +34,7 @@ function StringArray2SOArray(A:TStringArray):ISuperObject;
 function DynArr2SOArray(const items: Array of String):ISuperObject;
 
 function SOArray2StringArray(items: ISuperObject):TStringArray;
+function SOAggregate(Rows: ISuperObject; KeyName: String; AggFieldName: String=''): ISuperObject;
 
 function MergeSOArrays(A,B:ISuperObject):ISuperObject;
 
@@ -763,6 +764,28 @@ begin
       result.AsArray.Add(item);
   end;
 end;
+
+function SOAggregate(Rows: ISuperObject; KeyName: String; AggFieldName: String=''): ISuperObject;
+var
+  Key: UnicodeString;
+  Row,Data: ISuperObject;
+begin
+  Result := SO();
+  for Row in Rows do
+  begin
+    Key := Row.S[KeyName];
+    if (AggFieldName<>'') then
+      Data := Row[AggFieldName]
+    else
+      Data := Row;
+    if Result.AsObject.Exists(Key) then
+      Result.A[Key].Add(Data)
+    else
+      Result[Key] := SA([Data]);
+  end;
+end;
+
+
 
 end.
 
