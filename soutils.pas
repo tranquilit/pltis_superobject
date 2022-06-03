@@ -34,6 +34,9 @@ function StringArray2SOArray(A:TStringArray):ISuperObject;
 function DynArr2SOArray(const items: Array of String):ISuperObject;
 
 function SOArray2StringArray(items: ISuperObject):TStringArray;
+// aggregate Rows by identical KeyName value.
+// If AggFieldName is not empty, returns a list of single extracted value from rows
+// else return a list of rows objects
 function SOAggregate(Rows: ISuperObject; KeyName: String; AggFieldName: String=''): ISuperObject;
 
 function MergeSOArrays(A,B:ISuperObject):ISuperObject;
