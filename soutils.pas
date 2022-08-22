@@ -51,6 +51,8 @@ function ExtractField(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolea
 // create a new array with a subset of the fields
 function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
 
+function RemoveDuplicates(SOArray: ISuperObject): ISuperObject;
+
 // expand an array of array to an array of dict. All items must have same count of cell
 // fieldnames of cell is in ColumnNames
 function SOArrayArrayExpand(SOArray:ISuperobject;ColumnNames: TStringArray): ISuperObject;
@@ -334,6 +336,19 @@ begin
       end;
     end;
   result := False;
+end;
+
+function RemoveDuplicates(SOArray: ISuperObject): ISuperObject;
+begin
+  with TStringList.Create do
+  try
+    Sorted := True;
+    Duplicates := dupIgnore;
+    CommaText := Join(',', SOArray);
+    Result := Split(CommaText, ',');
+  finally
+    Free;
+  end;
 end;
 
 function SOArrayArrayExpand(SOArray: ISuperobject; ColumnNames: TStringArray
