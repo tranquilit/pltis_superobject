@@ -108,7 +108,8 @@ function StringArrayIntersect(const a1,a2:TStringArray):TStringArray;
 
 implementation
 
-uses StrUtils;
+uses
+  StrUtils;
 
 operator in(const a:string;const b:Array Of String):Boolean;inline;
 var i:integer;
@@ -339,15 +340,21 @@ begin
 end;
 
 function RemoveDuplicates(SOArray: ISuperObject): ISuperObject;
+var
+  Done: Array of UnicodeString;
+  item: ISuperObject;
+  s: UnicodeString;
 begin
-  with TStringList.Create do
-  try
-    Sorted := True;
-    Duplicates := dupIgnore;
-    CommaText := Join(',', SOArray);
-    Result := Split(CommaText, ',');
-  finally
-    Free;
+  Result := TSuperObject.Create(stArray);
+  for item in SOArray do
+  begin
+    s := item.AsString;
+    if not (s in Done) then
+    begin
+      SetLength(Done,Length(Done)+1);
+      Done[Length(Done)-1] := s;
+      Result.AsArray.Add(item);
+    end;
   end;
 end;
 
@@ -355,7 +362,7 @@ function SOArrayArrayExpand(SOArray: ISuperobject; ColumnNames: TStringArray
   ): ISuperObject;
 
 var
-  item,cell,row: ISUperObject;
+  item,row: ISUperObject;
   i: integer;
 begin
   Result := TSuperObject.Create(stArray);
