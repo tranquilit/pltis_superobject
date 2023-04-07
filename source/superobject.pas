@@ -1035,9 +1035,9 @@ begin
       vtWideChar: Add(TSuperObject.Create(SOChar(TVarRec(Args[j]).VWideChar)));
       vtExtended: Add(TSuperObject.Create(TVarRec(Args[j]).VExtended^));
       vtCurrency: Add(TSuperObject.CreateCurrency(TVarRec(Args[j]).VCurrency^));
-      vtString  : Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VString^)));
+      vtString  : Add(TSuperObject.Create(SOString(Utf8Decode(TVarRec(Args[j]).VString^))));
       vtPChar   : Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VPChar^)));
-      vtAnsiString: Add(TSuperObject.Create(SOString(AnsiString(TVarRec(Args[j]).VAnsiString))));
+      vtAnsiString: Add(TSuperObject.Create(SOString(Utf8Decode(AnsiString(TVarRec(Args[j]).VAnsiString)))));
       vtWideString: Add(TSuperObject.Create(SOString(PWideChar(TVarRec(Args[j]).VWideString))));
       vtInterface:
         if TVarRec(Args[j]).VInterface = nil then
@@ -1061,7 +1061,7 @@ begin
           Add(TSuperObject.Create(PtrInt(TVarRec(Args[j]).VPointer)));
 {$if declared(vtUnicodeString)}
       vtUnicodeString:
-          Add(TSuperObject.Create(SOString(string(TVarRec(Args[j]).VUnicodeString))));
+          Add(TSuperObject.Create(SOString(TVarRec(Args[j]).VUnicodeString)));
 {$ifend}
     else
       assert(false);
