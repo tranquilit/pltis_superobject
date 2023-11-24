@@ -96,6 +96,7 @@ function SOArrayIndexOf(const S:String; List: ISuperObject): Integer;
 
 // string splitted by comma.
 function SOEnsureList(StringOrArray: ISuperObject): ISuperObject;
+function SOEnsureStringArray(StringOrArray: ISuperObject): TStringArray;
 
 function CompareInt(i1,i2: Int64):Integer;
 
@@ -759,6 +760,17 @@ begin
     Result := StringOrArray
   else
     Result := SOUtils.Split(StringOrArray.AsString,',');
+end;
+
+function SOEnsureStringArray(StringOrArray: ISuperObject): TStringArray;
+begin
+  if not Assigned(StringOrArray) then
+    Exit(Nil)
+
+  else if StringOrArray.DataType=stArray then
+    Exit(SOArray2StringArray(StringOrArray))
+  else
+    Exit(String(StringOrArray.AsString).Split(','));
 end;
 
 function StringArray2SOArray(A:TStringArray):ISuperObject;
