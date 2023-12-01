@@ -51,6 +51,12 @@ function SOReduce(SOList:ISuperObject;const fieldname:String; NilIfNil:Boolean=T
 // create a new array with a subset of the fields
 function SOReduce(SOList:ISuperObject; const keys: Array of String):ISuperObject;
 
+// obsolete
+function ExtractField(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolean=True):ISuperObject; deprecated 'Use SOReduce';
+function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject; deprecated 'Use SOReduce';
+
+
+
 function RemoveDuplicates(SOArray: ISuperObject): ISuperObject;
 
 // expand an array of array to an array of dict. All items must have same count of cell
@@ -301,6 +307,16 @@ begin
   end
   else
     Result := Nil;
+end;
+
+function ExtractField(SOList: ISuperObject; const fieldname: String; NilIfNil: Boolean): ISuperObject;
+begin
+  result := SOReduce(SOList,fieldname,NilIfNil);
+end;
+
+function ExtractFields(SOList: ISuperObject; const keys: array of String): ISuperObject;
+begin
+  result := SOReduce(SOList,keys);
 end;
 
 
