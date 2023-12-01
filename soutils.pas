@@ -47,9 +47,9 @@ function Join(const Sep: String; Arr:ISuperObject):String;
 function StrIn(const St: String; List:ISuperObject): Boolean;
 function StrToken(var S: string; Separator: String): string;
 // create a new array with a field
-function ExtractField(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolean=True):ISuperObject;
+function SOReduce(SOList:ISuperObject;const fieldname:String; NilIfNil:Boolean=True):ISuperObject;
 // create a new array with a subset of the fields
-function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject;
+function SOReduce(SOList:ISuperObject; const keys: Array of String):ISuperObject;
 
 function RemoveDuplicates(SOArray: ISuperObject): ISuperObject;
 
@@ -225,7 +225,7 @@ begin
   end;
 end;
 
-function ExtractField(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolean=True):ISuperObject;
+function SOReduce(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolean=True):ISuperObject;
 var
   item:ISuperObject;
 begin
@@ -285,7 +285,7 @@ begin
     Result := Nil;
 end;
 
-function ExtractFields(SOList: ISuperObject; const keys: array of String
+function SOReduce(SOList: ISuperObject; const keys: array of String
   ): ISuperObject;
 var
   item:ISuperObject;
