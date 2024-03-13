@@ -826,15 +826,15 @@ begin
   Result := SO();
   for Row in Rows do
   begin
-    Key := Row.S[KeyName];
+    Key := Row.AsObject.S[KeyName];
     if (AggFieldName<>'') then
-      Data := Row[AggFieldName]
+      Data := Row.AsObject[AggFieldName]
     else
       Data := Row;
     if Result.AsObject.Exists(Key) then
-      Result.A[Key].Add(Data)
+      Result.AsObject[Key].AsArray.Add(Data)
     else
-      Result[Key] := SA([Data]);
+      Result.AsObject[Key] := SA([Data]);
   end;
 end;
 
