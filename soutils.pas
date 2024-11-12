@@ -51,6 +51,10 @@ function SOReduce(SOList:ISuperObject;const fieldname:String; NilIfNil:Boolean=T
 // create a new array with a subset of the fields
 function SOReduce(SOList:ISuperObject; const keys: Array of String):ISuperObject;
 
+function SOObjectMatch(SOObject: ISuperObject;  keys: array of String; Values: array of const): Boolean;
+function SOEquals(SOObject1, SOObject2: ISuperObject): Boolean;
+function SOArrayDeleteMatching(SOList:ISuperObject; keys: Array of String; Values: Array of const):Boolean;
+
 // obsolete
 function ExtractField(SOList:ISuperObject;const fieldname:String;NilIfNil:Boolean=True):ISuperObject; deprecated 'Use SOReduce';
 function ExtractFields(SOList:ISuperObject;const keys: Array of String):ISuperObject; deprecated 'Use SOReduce';
@@ -116,7 +120,9 @@ function StringArrayIntersect(const a1,a2:TStringArray):TStringArray;
 implementation
 
 uses
-  StrUtils;
+  StrUtils,
+  supertypes,
+  Variants;
 
 operator in(const a:string;const b:Array Of String):Boolean;inline;
 var i:integer;
@@ -307,6 +313,109 @@ begin
   end
   else
     Result := Nil;
+end;
+
+function SOObjectMatch(SOObject: ISuperObject;  keys: array of String; Values: array of const): Boolean;
+var
+  i: Integer;
+begin
+  if not SOObject.IsType(stObject) then
+    Exit(False);
+
+  for i := low(Keys) to high(keys) do
+  begin
+    if not SOObject.AsObject.Exists(Keys[i]) then
+      Exit(False);
+    case TVarRec(Values[i]).VType of
+      vtInteger : if SOObject.I[Keys[i]] <> TVarRec(Values[i]).VInteger then Exit(False);
+      vtInt64   : if SOObject.I[Keys[i]] <> TVarRec(Values[i]).VInt64^ then Exit(False);
+      vtBoolean : if SOObject.B[Keys[i]] <> TVarRec(Values[i]).VBoolean then Exit(False);
+      vtChar    : if SOObject.S[Keys[i]] <> String(TVarRec(Values[i]).VChar) then Exit(False);
+      vtWideChar: if SOObject.S[Keys[i]] <> WideString(TVarRec(Values[i]).VWideChar) then Exit(False);
+      vtExtended: if SOObject.D [Keys[i]] <> TVarRec(Values[i]).VExtended^ then Exit(False);
+      vtCurrency: if SOObject.C[Keys[i]] <> TVarRec(Values[i]).VCurrency^ then Exit(False);
+      vtString  : if SOObject.S[Keys[i]] <> Utf8Decode(TVarRec(Values[i]).VString^) then Exit(False);
+      vtAnsiString: if SOObject.S[Keys[i]] <> UTF8Decode(PChar(TVarRec(Values[i]).VAnsiString^)) then Exit(False);
+      vtWideString: if SOObject.S[Keys[i]] <> PWideString(TVarRec(Values[i]).VWideString)^ then Exit(False);
+      vtInterface: if SOEquals(SOObject[Keys[i]], ISuperObject(TVarRec(Values[i]).VInterface)) then Exit(False);
+      vtVariant: if SOEquals(SOObject[Keys[i]], SO(TVarRec(Values[i]).VVariant^)) then Exit(False);
+      vtUnicodeString: if SOObject.S[Keys[i]] <> SOString(TVarRec(Values[i]).VUnicodeString) then Exit(False);
+    else
+      Exit(False);
+    end;
+  end;
+
+  Exit(True);
+end;
+
+function SOEquals(SOObject1, SOObject2: ISuperObject): Boolean;
+var
+  item: TSuperAvlEntry;
+  i: Integer;
+begin
+  if SOObject1=SOObject2 then
+    Exit(True);
+
+  if (Assigned(SOObject1) and not Assigned(SOObject2)) or (not Assigned(SOObject1) and Assigned(SOObject2)) then
+    Exit(False);
+
+  if SOObject1.DataType <> SOObject2.DataType then
+    Exit(False);
+
+  case SOObject1.DataType of
+    stBoolean:
+      if SOObject1.AsBoolean <> SOObject2.AsBoolean then
+        Exit(False);
+
+    stDouble:
+      if SOObject1.AsDouble <> SOObject2.AsDouble then
+        Exit(False);
+
+    stCurrency:
+      if SOObject1.AsCurrency <> SOObject2.AsCurrency then
+        Exit(False);
+
+    stInt:
+        if SOObject1.AsInteger <> SOObject2.AsInteger then
+          Exit(False);
+    stObject:
+        begin
+          if SOObject1.AsObject.count <> SOObject2.AsObject.count then
+            Exit(False);
+
+          for item in SOObject1.AsObject do
+            if not SOEquals(item.Value, SOObject2.AsObject[item.Name]) then
+              Exit(False);
+        end;
+    stArray:
+        begin
+          if SOObject1.AsArray.length <> SOObject2.AsArray.length then
+            Exit(False);
+
+          for i := 0 to SOObject1.AsArray.Length-1 do
+            if not SOEquals(SOObject1.AsArray[i], SOObject2.AsArray[i]) then
+              Exit(False);
+        end;
+    else
+      if SOObject1.AsString<> SOObject2.AsString then
+        Exit(False);
+    end;
+  exit(True);
+end;
+
+function SOArrayDeleteMatching(SOList: ISuperObject; keys: array of String; Values: array of const): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := SOList.AsArray.Length-1 downto 0 do
+  begin
+    if SOObjectMatch(SOList.AsArray[i],keys,values) then
+    begin
+      SOList.AsArray.Delete(i);
+      Result := True;
+    end;
+  end;
 end;
 
 function ExtractField(SOList: ISuperObject; const fieldname: String; NilIfNil: Boolean): ISuperObject;
@@ -595,7 +704,7 @@ begin
     begin
       for j := 0 to a2.AsArray.Length-1 do
       begin
-        if a1.AsArray[i].Compare(a2.AsArray[j]) = cpEqu then
+        if SOEquals(a1.AsArray[i], a2.AsArray[j]) then
           Result.AsArray.Add(a1.AsArray[i]);
       end;
     end;
@@ -717,33 +826,45 @@ end;
 function SOArrayFindFirst(AnObject, List: ISuperObject; const keys: array of String
   ): ISuperobject;
 var
-  item: ISuperObject;
   key:String;
+  Item: ISuperObject;
+  LastMatch: Boolean;
 begin
   Result := Nil;
-  for item in List do
+  if not Assigned(List) then
+    Exit;
+  if not Assigned(AnObject) then
+    Exit;
+
+  for Item in List do
   begin
     if length(keys) = 0 then
     begin
-      if (item = AnObject) or (item.Compare(AnObject) = cpEqu) then
+      if SOEquals(item,AnObject) then
       begin
-        Result := item;
-        exit;
+        Result := Item;
+        break;
       end;
     end
     else
     begin
+      LastMatch := False;
       for key in keys do
       begin
-        if (item[key]<>Nil) and (item[key].Compare(AnObject[key]) <> cpEqu) then
+        LastMatch := SOEquals(item[key], AnObject[key]);
+        if not LastMatch then
           break;
       end;
-      if (item[key]<>Nil) and (item[key].Compare(AnObject[key]) = cpEqu) then
+
+      if LastMatch then
       begin
-        Result := item;
-        exit;
+        Result := Item;
+        break;
       end;
     end;
+
+    if Result <> Nil then
+      break;
   end;
 end;
 
