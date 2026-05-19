@@ -21,6 +21,7 @@ function ClipboardSOData: ISuperObject;
 var
   NewData, row: ISuperObject;
   St: TStringStream;
+  ClipData: String;
 begin
   Result := TSuperObject.Create(stArray);
   if Clipboard.HasFormat(ClipbrdJson) then
@@ -48,7 +49,12 @@ begin
     if Clipboard.GetFormat(CF_Text, St) then
     try
       St.Seek(0, 0);
-      NewData := SO(St.DataString);
+
+      ClipData := UTF8Encode(St.UnicodeDataString);
+      if ClipData.EndsWith(#0) then
+        ClipData := Copy(ClipData,1,Length(ClipData)-1);
+      NewData := csv2SO(ClipData);
+
       if NewData.DataType in [stArray,stObject] then
       begin
         if NewData.DataType = stArray then

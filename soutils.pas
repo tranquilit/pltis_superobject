@@ -68,7 +68,7 @@ function RemoveDuplicates(SOArray: ISuperObject): ISuperObject;
 function SOArrayArrayExpand(SOArray:ISuperobject;ColumnNames: TStringArray): ISuperObject;
 function SOArrayArrayExpand(SOArray: ISuperobject; ColumnName: String ): ISuperObject;
 
-function csv2SO(csv:String;Sep:Char=#0):ISuperObject;
+function csv2SO(csv:String;Sep:Char=#0;CellsAsSO: Boolean=True):ISuperObject;
 
 // Compare 2 values given their PropertyName
 type TSOCompareByPropertyName=function (const PropertyName:String;const d1,d2:ISuperObject):TSuperCompareResult;
@@ -513,11 +513,11 @@ begin
       Result.AsArray.Add(SO([ColumnName, item]));
 end;
 
-function csv2SO(csv: String;Sep:Char=#0): ISuperObject;
+function csv2SO(csv: String;Sep:Char=#0;CellsAsSO: Boolean=True): ISuperObject;
 var
   r,col,maxcol:integer;
   row : String;
-  Lines,header,values,newrec:ISuperObject;
+  Lines,header,values,newrec, cell:ISuperObject;
 begin
   lines := SplitLines(csv);
   row := UTF8Encode(lines.AsArray.S[0]);
@@ -539,7 +539,9 @@ begin
     for r:=1 to lines.AsArray.Length-1 do
     begin
       row := Utf8Encode(lines.AsArray.S[r]);
-      values :=Split(row,sep);
+      if (Row='') or (row=#0) then
+        Continue;
+      values := Split(row,sep);
       Newrec := TSuperObject.Create;
       result.AsArray.Add(newrec);
       maxcol := values.AsArray.Length;
@@ -547,7 +549,14 @@ begin
         maxcol := header.AsArray.Length;
 
       for col := 0 to maxcol-1 do
-        newrec.S[header.AsArray.S[col]] := values.AsArray.S[col];
+      begin
+        if CellsAsSO then
+          cell := SO(values.AsArray.S[col]);
+        if CellsAsSO and Assigned(Cell) then
+          newrec[header.AsArray.S[col]] := cell
+        else
+          newrec.S[header.AsArray.S[col]] := values.AsArray.S[col];
+      end;
     end
   else
   begin
