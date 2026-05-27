@@ -38,6 +38,7 @@ function SOArray2StringArray(items: ISuperObject):TStringArray;
 // If AggFieldName is not empty, returns a list of single extracted value from rows
 // else return a list of rows objects
 function SOAggregate(Rows: ISuperObject; KeyName: String; AggFieldName: String=''): ISuperObject;
+function SOArrayIndex(Rows: ISuperObject; KeyName: String): ISuperObject;
 
 function MergeSOArrays(A,B:ISuperObject):ISuperObject;
 
@@ -968,6 +969,18 @@ begin
   end;
 end;
 
+function SOArrayIndex(Rows: ISuperObject; KeyName: String): ISuperObject;
+var
+  Key: UnicodeString;
+  Row: ISuperObject;
+begin
+  Result := SO();
+  for Row in Rows do
+  begin
+    Key := Row.AsObject.S[KeyName];
+    Result.AsObject[Key].AsArray.Add(row)
+  end;
+end;
 
 
 end.
