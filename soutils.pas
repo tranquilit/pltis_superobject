@@ -978,7 +978,7 @@ begin
   for Row in Rows do
   begin
     Key := Row.AsObject.S[KeyName];
-    Result.AsObject[Key].AsArray.Add(row)
+    Result.AsObject[Key] := row;
   end;
 end;
 
