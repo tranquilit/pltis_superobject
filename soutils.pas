@@ -29,6 +29,9 @@ interface
 uses
   Classes, SysUtils,SuperObject;
 
+// to protect aga,inst nil item
+function ItemOrNull(Item: ISuperObject): ISuperObject; inline;
+
 function StringList2SOArray(St:TStringList):ISuperObject;
 function StringArray2SOArray(A:TStringArray):ISuperObject;
 function DynArr2SOArray(const items: Array of String):ISuperObject;
@@ -199,6 +202,12 @@ begin
 
 end;
 
+function ItemOrNull(Item: ISuperObject): ISuperObject;
+begin
+  if Assigned(Item) then
+    Exit(Item);
+  Exit(TSuperObject.Create(stNull));
+end;
 
 function StringList2SOArray(St: TStringList): ISuperObject;
 var
@@ -247,6 +256,8 @@ begin
     Result := TSuperObject.Create(stArray);
     for item in SOList do
     begin
+      if not Assigned(item) then
+        Continue;
       if Item.DataType = stObject then
         Result.AsArray.Add(item[fieldname])
       else if Item.DataType = stArray then
@@ -287,6 +298,8 @@ begin
     i := 0;
     for item in SOList do
     begin
+      if not Assigned(item) then
+        Continue;
       if Item.DataType = stObject then
         Result[i] := item.S[fieldname]
       else if Item.DataType = stArray then
@@ -310,7 +323,11 @@ begin
 
     Result := TSuperObject.Create(stArray);
     for item in SOList do
+    begin
+      if not Assigned(item) then
+        Continue;
       Result.AsArray.Add(SOExtractFields(item,keys))
+    end;
   end
   else
     Result := Nil;
@@ -320,6 +337,8 @@ function SOObjectMatch(SOObject: ISuperObject;  keys: array of String; Values: a
 var
   i: Integer;
 begin
+  if not Assigned(SOObject) then
+    Exit(False);
   if not SOObject.IsType(stObject) then
     Exit(False);
 
@@ -409,6 +428,8 @@ var
   i: Integer;
 begin
   Result := False;
+  if not Assigned(SOLIst) then
+    Exit;
   for i := SOList.AsArray.Length-1 downto 0 do
   begin
     if SOObjectMatch(SOList.AsArray[i],keys,values) then
@@ -440,6 +461,8 @@ begin
     if Arr.DataType=stArray then
       for item in Arr do
       begin
+        if not Assigned(item) then
+          Continue;
         if Result<>'' then
           Result:=Result+Sep;
         Result:=Result+UTF8Encode(item.AsString);
@@ -457,6 +480,8 @@ begin
   if List <>Nil then
     for it in List do
     begin
+      if not assigned(it) then
+        continue;
       if (it.DataType=stString) and (it.AsString=St) then
       begin
         result := True;
@@ -475,6 +500,8 @@ begin
   Result := TSuperObject.Create(stArray);
   for item in SOArray do
   begin
+    if not Assigned(Item) then
+      Continue;
     s := item.AsString;
     if not (s in Done) then
     begin
@@ -495,6 +522,8 @@ begin
   Result := TSuperObject.Create(stArray);
   for item in SOArray do
   begin
+    if not Assigned(item) then
+      Continue;
     row := SO();
     for i:=0 to length(ColumnNames)-1 do
       row[ColumnNames[i]] := item.AsArray[i];
@@ -510,8 +539,12 @@ begin
   Result := TSuperObject.Create(stArray);
   if Assigned(SOArray) then
     for item in SOArray do
+    begin
+      if not Assigned(item) then
+        Continue;
       // single item
       Result.AsArray.Add(SO([ColumnName, item]));
+    end;
 end;
 
 function csv2SO(csv: String;Sep:Char=#0;CellsAsSO: Boolean=True): ISuperObject;
@@ -571,8 +604,14 @@ end;
 function DefaultSOCompareFunc(const SO1,SO2:ISuperObject):integer;
 var
   compresult : TSuperCompareResult;
-
 begin
+  if not Assigned(SO1) and assigned(SO2) then
+    Exit(-1);
+  if Assigned(SO1) and not assigned(SO2) then
+    Exit(1);
+  if not Assigned(SO1) and not assigned(SO2) then
+    Exit(0);
+
   compresult := SO1.Compare(SO2);
   case compresult of
     cpLess : Result := -1;
@@ -612,10 +651,13 @@ var
   end;
 
 begin
-  if Reversed then IReversed:=-1 else IReversed:=1;
+  if Reversed then
+    IReversed:=-1
+  else
+    IReversed:=1;
   If CompareFunc=Nil then
      CompareFunc :=  @DefaultSOCompareFunc;
-  if (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
+  if Assigned(SOArray) and (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
     QuickSort(0,SOArray.AsArray.Length-1,CompareFunc,IReversed);
 end;
 
@@ -624,7 +666,7 @@ var
   Elem: ISuperObject;
 begin
   For Elem in NewElements do
-    TargetArray.AsArray.Add(Elem);
+    TargetArray.AsArray.Add(ItemOrNull(Elem));
 end;
 
 procedure SortByFields(SOArray: ISuperObject;Fields:array of string;reversed:Boolean=False);
@@ -686,7 +728,7 @@ procedure SortByFields(SOArray: ISuperObject;Fields:array of string;reversed:Boo
   end;
 
 begin
-  if (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
+  if Assigned(SOArray) and (SOArray.AsArray<>Nil) and (SOArray.AsArray.Length>1) then
     QuickSort(0,SOArray.AsArray.Length-1);
 end;
 
@@ -700,7 +742,7 @@ begin
   begin
     result := TSuperObject.Create(stObject);
     for key in keys do
-      Result[key] := SO[key];
+      Result[key] := ItemOrNull(SO[key]);
   end;
 end;
 
@@ -709,7 +751,7 @@ var
   i,j:integer;
 begin
   Result := TSuperObject.Create(stArray);
-  if assigned(a1) and assigned(a2) then
+  if assigned(a1) and a1.IsType(stArray) and assigned(a2) and a2.IsType(stArray) then
     for i:=0 to a1.AsArray.Length -1 do
     begin
       for j := 0 to a2.AsArray.Length-1 do
@@ -957,6 +999,8 @@ begin
   Result := SO();
   for Row in Rows do
   begin
+    if not Assigned(Row) or not Row.IsType(stObject) then
+      Continue;
     Key := Row.AsObject.S[KeyName];
     if (AggFieldName<>'') then
       Data := Row.AsObject[AggFieldName]
@@ -977,6 +1021,8 @@ begin
   Result := SO();
   for Row in Rows do
   begin
+    if not Assigned(Row) or not Row.IsType(stObject) then
+      Continue;
     Key := Row.AsObject.S[KeyName];
     Result.AsObject[Key] := row;
   end;
