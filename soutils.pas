@@ -120,6 +120,8 @@ function SOArrayIntersect(const a1,a2:ISuperObject):ISuperObject;
 
 function StringArrayIntersect(const a1,a2:TStringArray):TStringArray;
 
+// only for simple types. For other, return json representation
+function SOAsVariant(SOData: ISuperObject): Variant;
 
 implementation
 
@@ -780,6 +782,26 @@ begin
     end;
   end;
 end;
+
+function SOAsVariant(SOData: ISuperObject): Variant;
+begin
+  if not Assigned(SOData) then
+  begin
+    Result := Unassigned;
+    Exit;
+  end;
+  case SOData.DataType of
+    stNull: Result := Null;
+    stBoolean: Result := SOData.AsBoolean;
+    stDouble: Result := SOData.AsDouble;
+    stCurrency: Result := SOData.AsCurrency;
+    stInt: Result := SOData.AsInteger;
+    stString: Result := UTF8Encode(SOData.AsString);
+  else
+    Result := UTF8Encode(SOData.AsString);
+  end;
+end;
+
 
 // Compare 2 objects SO1 and SO2 by comparing each key value in turn. If CompareFunc is supplied, comparison function can be based on the key name
 function SOCompareByKeys(SO1, SO2: ISuperObject; const keys: array of String;const CompareFunc:TSOCompareByPropertyName=Nil;DirectProperties:Boolean=False): TSuperCompareResult;
